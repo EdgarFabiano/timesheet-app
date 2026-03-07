@@ -30,6 +30,9 @@ builder.Services.AddScoped<EmployeeService>();
 // Assignment Service
 builder.Services.AddScoped<AssignmentService>();
 
+// Timesheet Service
+builder.Services.AddScoped<TimesheetService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
