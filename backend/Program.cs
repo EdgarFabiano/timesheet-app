@@ -24,6 +24,9 @@ builder.Services.AddScoped<ClientService>();
 // Project Service
 builder.Services.AddScoped<ProjectService>();
 
+// Employee Service
+builder.Services.AddScoped<EmployeeService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
