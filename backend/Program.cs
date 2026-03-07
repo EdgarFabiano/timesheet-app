@@ -27,6 +27,9 @@ builder.Services.AddScoped<ProjectService>();
 // Employee Service
 builder.Services.AddScoped<EmployeeService>();
 
+// Assignment Service
+builder.Services.AddScoped<AssignmentService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
