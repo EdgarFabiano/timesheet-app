@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TimesheetApp.API/TimesheetApp.API.csproj" />
+  <Project Path="TimesheetApp.Tests/TimesheetApp.Tests.csproj" />
+</Solution>

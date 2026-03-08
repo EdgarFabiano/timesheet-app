@@ -1,0 +1,10 @@
+global using Xunit;
+global using Microsoft.EntityFrameworkCore;
+global using TimesheetApp.API.Data;
+global using TimesheetApp.API.Models;
+global using TimesheetApp.API.DTOs;
+global using TimesheetApp.API.DTOs.Clients;
+global using TimesheetApp.API.DTOs.Projects;
+global using TimesheetApp.API.DTOs.Employees;
+global using TimesheetApp.API.DTOs.Assignments;
+global using TimesheetApp.API.DTOs.Timesheets;
