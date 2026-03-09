@@ -14,7 +14,7 @@ public class AuthServiceTests
     public AuthServiceTests()
     {
         var inMemorySettings = new Dictionary<string, string?> {
-            {"Jwt:Key", "SuperSecretTestKey123456789!"},
+            {"Jwt:Key", "SuperSecretTestKey12345678901234567890"},
             {"Jwt:Issuer", "TestIssuer"},
             {"Jwt:Audience", "TestAudience"}
         };

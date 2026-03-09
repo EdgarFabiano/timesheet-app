@@ -60,4 +60,27 @@ public static class TestDbContextFactory
 
         context.SaveChanges();
     }
+
+    public static AppDbContext CreateInMemoryContextWithEmployeeAndProject(Guid? employeeId = null, Guid? projectId = null)
+    {
+        var empId = employeeId ?? Guid.NewGuid();
+        var projId = projectId ?? Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        
+        var context = CreateInMemoryContext();
+        context.Clients.Add(new TimesheetApp.API.Models.Client { Id = clientId, Name = "Test Client", ContactEmail = "client@test.com", IsActive = true, CreatedAt = DateTime.UtcNow });
+        context.Employees.Add(new TimesheetApp.API.Models.Employee { Id = empId, FullName = "Test Employee", Email = "employee@test.com", AzureAdObjectId = "azure-123", Department = "Engineering", IsActive = true, CreatedAt = DateTime.UtcNow });
+        context.Projects.Add(new TimesheetApp.API.Models.Project { Id = projId, Name = "Test Project", ClientId = clientId, IsActive = true, CreatedAt = DateTime.UtcNow });
+        context.SaveChanges();
+        return context;
+    }
+
+    public static AppDbContext CreateInMemoryContextWithClient(Guid? clientId = null)
+    {
+        var cId = clientId ?? Guid.NewGuid();
+        var context = CreateInMemoryContext();
+        context.Clients.Add(new TimesheetApp.API.Models.Client { Id = cId, Name = "Test Client", ContactEmail = "client@test.com", IsActive = true, CreatedAt = DateTime.UtcNow });
+        context.SaveChanges();
+        return context;
+    }
 }

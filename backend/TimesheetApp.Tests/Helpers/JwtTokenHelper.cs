@@ -7,7 +7,7 @@ namespace TimesheetApp.Tests.Helpers;
 
 public static class JwtTokenHelper
 {
-    private const string TestKey = "SuperSecretTestKey123456789!";
+    private const string TestKey = "SuperSecretTestKey12345678901234567890";
     private const string TestIssuer = "TestIssuer";
     private const string TestAudience = "TestAudience";
 
@@ -57,7 +57,7 @@ public static class JwtTokenHelper
 
     public static string GenerateInvalidSignatureToken()
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("InvalidKeyThatDoesNotMatch!"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("InvalidKeyThatDoesNotMatch1234567890"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]

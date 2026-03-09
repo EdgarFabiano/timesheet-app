@@ -12,14 +12,13 @@ public class ProjectServiceTests
 
     public ProjectServiceTests()
     {
-        _clientId = Guid.NewGuid();
+        var context = TestDbContextFactory.CreateInMemoryContextWithClient();
+        _clientId = context.Clients.First().Id;
     }
 
     private AppDbContext CreateContextWithClient()
     {
-        var context = TestDbContextFactory.CreateInMemoryContext();
-        context.Clients.Add(new Client { Id = _clientId, Name = "Test Client", ContactEmail = "client@test.com", IsActive = true, CreatedAt = DateTime.UtcNow });
-        return context;
+        return TestDbContextFactory.CreateInMemoryContextWithClient(_clientId);
     }
 
     [Fact]

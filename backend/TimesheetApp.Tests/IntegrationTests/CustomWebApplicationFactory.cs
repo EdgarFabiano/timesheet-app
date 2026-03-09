@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -9,21 +10,35 @@ namespace TimesheetApp.Tests.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private static int _seedCount = 0;
+    private readonly int _instanceId;
+
+    public CustomWebApplicationFactory()
+    {
+        _instanceId = Interlocked.Increment(ref _seedCount);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-            if (descriptor != null)
+            var toRemove = services
+                .Where(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>) || 
+                           d.ServiceType == typeof(AppDbContext) ||
+                           (d.ServiceType.IsGenericType && d.ServiceType.GetGenericTypeDefinition() == typeof(DbContextOptions<>)))
+                .ToList();
+            
+            foreach (var descriptor in toRemove)
             {
                 services.Remove(descriptor);
             }
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("TestDatabase_" + Guid.NewGuid()));
+                options.UseInMemoryDatabase("TestDatabase_" + _instanceId));
 
-            using var scope = services.BuildServiceProvider().CreateScope();
+            var sp = services.BuildServiceProvider();
+            using var scope = sp.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             context.Database.EnsureCreated();
 
@@ -104,6 +119,31 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             CreatedAt = DateTime.UtcNow
         };
         context.Users.Add(employeeUser);
+
+        var assignmentTestEmployee = new Employee
+        {
+            Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
+            FullName = "Assignment Test Employee",
+            Email = "assignmenttest@test.com",
+            Department = "Engineering",
+            AzureAdObjectId = "azure-assignment-test",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Employees.Add(assignmentTestEmployee);
+
+        var assignmentTestProject = new Project
+        {
+            Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
+            Name = "Assignment Test Project",
+            Description = "Test Project",
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddMonths(3),
+            IsActive = true,
+            ClientId = client.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Projects.Add(assignmentTestProject);
 
         context.SaveChanges();
     }

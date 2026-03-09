@@ -12,18 +12,14 @@ public class TimesheetServiceTests
 
     public TimesheetServiceTests()
     {
-        _employeeId = Guid.NewGuid();
-        _projectId = Guid.NewGuid();
+        var context = TestDbContextFactory.CreateInMemoryContextWithEmployeeAndProject();
+        _employeeId = context.Employees.First().Id;
+        _projectId = context.Projects.First().Id;
     }
 
     private AppDbContext CreateContextWithEmployeeAndProject()
     {
-        var context = TestDbContextFactory.CreateInMemoryContext();
-        var clientId = Guid.NewGuid();
-        context.Clients.Add(new Client { Id = clientId, Name = "Test Client", ContactEmail = "client@test.com", IsActive = true, CreatedAt = DateTime.UtcNow });
-        context.Employees.Add(new Employee { Id = _employeeId, FullName = "Test Employee", Email = "employee@test.com", AzureAdObjectId = "azure-123", Department = "Engineering", IsActive = true, CreatedAt = DateTime.UtcNow });
-        context.Projects.Add(new Project { Id = _projectId, Name = "Test Project", ClientId = clientId, IsActive = true, CreatedAt = DateTime.UtcNow });
-        return context;
+        return TestDbContextFactory.CreateInMemoryContextWithEmployeeAndProject(_employeeId, _projectId);
     }
 
     [Fact]
