@@ -1,0 +1,39 @@
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-header">
+      <h3>Timesheet App</h3>
+    </div>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/clients" routerLinkActive="active">
+        <mat-icon matListItemIcon>business</mat-icon>
+        <span matListItemTitle>Clients</span>
+      </a>
+      <a mat-list-item routerLink="/projects" routerLinkActive="active">
+        <mat-icon matListItemIcon>folder</mat-icon>
+        <span matListItemTitle>Projects</span>
+      </a>
+      <a mat-list-item routerLink="/employees" routerLinkActive="active">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Employees</span>
+      </a>
+      <a mat-list-item routerLink="/timesheets" routerLinkActive="active">
+        <mat-icon matListItemIcon>schedule</mat-icon>
+        <span matListItemTitle>Timesheets</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle navigation">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Timesheet App</span>
+      <span class="spacer"></span>
+      <button mat-button (click)="logout()">Logout</button>
+    </mat-toolbar>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
