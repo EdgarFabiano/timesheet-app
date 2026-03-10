@@ -1,6 +1,156 @@
-<h1>Timesheets</h1>
-<mat-card>
+<div class="page-header">
+  <h1>Timesheets</h1>
+  @if (!isAdmin()) {
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>add</mat-icon>
+      Log Hours
+    </button>
+  }
+</div>
+
+<mat-card class="filter-card">
   <mat-card-content>
-    <p>Timesheet entries will appear here.</p>
+    <div class="filters">
+      <div class="week-navigation">
+        <button mat-icon-button (click)="onWeekChange('prev')" title="Previous week">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="week-label" (click)="goToCurrentWeek()" title="Go to current week">
+          {{ weekRangeDisplay }}
+        </span>
+        <button mat-icon-button (click)="onWeekChange('next')" title="Next week">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        <button mat-button (click)="goToCurrentWeek()">Today</button>
+      </div>
+
+      @if (isAdmin()) {
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Employee</mat-label>
+          <mat-select [value]="selectedEmployeeId()" (selectionChange)="selectedEmployeeId.set($event.value); onFilterChange()">
+            <mat-option [value]="null">All Employees</mat-option>
+            @for (emp of employees(); track emp.id) {
+              <mat-option [value]="emp.id">{{ emp.fullName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Project</mat-label>
+        <mat-select [value]="selectedProjectId()" (selectionChange)="selectedProjectId.set($event.value); onFilterChange()">
+          <mat-option [value]="null">All Projects</mat-option>
+          @for (proj of projects(); track proj.id) {
+            <mat-option [value]="proj.id">{{ proj.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="total-hours">
+      <strong>Total Hours:</strong> {{ totalHours }}h
+    </div>
   </mat-card-content>
 </mat-card>
+
+<mat-card>
+  <mat-card-content>
+    @if (loading()) {
+      <div class="loading-shade">Loading...</div>
+    }
+
+    <table mat-table [dataSource]="timesheets()" class="full-width-table">
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let timesheet">{{ timesheet.date | date:'mediumDate' }}</td>
+      </ng-container>
+
+      @if (isAdmin()) {
+        <ng-container matColumnDef="employeeName">
+          <th mat-header-cell *matHeaderCellDef>Employee</th>
+          <td mat-cell *matCellDef="let timesheet">{{ timesheet.employeeName }}</td>
+        </ng-container>
+      }
+
+      <ng-container matColumnDef="projectName">
+        <th mat-header-cell *matHeaderCellDef>Project</th>
+        <td mat-cell *matCellDef="let timesheet">{{ timesheet.projectName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="hoursWorked">
+        <th mat-header-cell *matHeaderCellDef>Hours</th>
+        <td mat-cell *matCellDef="let timesheet">{{ timesheet.hoursWorked }}h</td>
+      </ng-container>
+
+      <ng-container matColumnDef="notes">
+        <th mat-header-cell *matHeaderCellDef>Notes</th>
+        <td mat-cell *matCellDef="let timesheet" class="notes-cell">{{ timesheet.notes || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let timesheet">
+          @if (canEditOrDelete(timesheet)) {
+            <button mat-icon-button color="primary" (click)="openEditDialog(timesheet)" title="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteTimesheet(timesheet)" title="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    @if (timesheets().length === 0 && !loading()) {
+      <p class="no-data">No timesheet entries found for this period.</p>
+    }
+  </mat-card-content>
+</mat-card>
+
+<div class="dialog-overlay" *ngIf="dialogOpen()" (click)="closeDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>{{ editingTimesheet() ? 'Edit Timesheet' : 'Log Hours' }}</h2>
+    <form [formGroup]="timesheetForm" (ngSubmit)="saveTimesheet()">
+      <p class="info-text">Logged in as: {{ currentUser?.email }}</p>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Project</mat-label>
+        <mat-select formControlName="projectId">
+          <mat-option *ngFor="let project of projects()" [value]="project.id">{{ project.name }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="timesheetForm.get('projectId')?.hasError('required')">Project is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Date</mat-label>
+        <input matInput [matDatepicker]="datePicker" formControlName="date">
+        <mat-datepicker-toggle matIconSuffix [for]="datePicker"></mat-datepicker-toggle>
+        <mat-datepicker #datePicker></mat-datepicker>
+        <mat-error *ngIf="timesheetForm.get('date')?.hasError('required')">Date is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Hours Worked</mat-label>
+        <input matInput type="number" formControlName="hoursWorked" step="0.5" min="0.5" max="24">
+        <mat-error *ngIf="timesheetForm.get('hoursWorked')?.hasError('required')">Hours is required</mat-error>
+        <mat-error *ngIf="timesheetForm.get('hoursWorked')?.hasError('min') || timesheetForm.get('hoursWorked')?.hasError('max')">Hours must be between 0.5 and 24</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Notes</mat-label>
+        <textarea matInput formControlName="notes" placeholder="Optional notes" rows="3"></textarea>
+      </mat-form-field>
+
+      <div class="dialog-actions">
+        <button mat-button type="button" (click)="closeDialog()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="timesheetForm.invalid">
+          {{ editingTimesheet() ? 'Update' : 'Submit' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

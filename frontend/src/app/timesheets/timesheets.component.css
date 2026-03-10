@@ -1,1 +1,123 @@
-/* Timesheets component styles */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.filter-card {
+  margin-bottom: 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.week-navigation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.week-label {
+  font-weight: 500;
+  min-width: 140px;
+  text-align: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.week-label:hover {
+  background: #f0f0f0;
+}
+
+.filter-field {
+  min-width: 200px;
+}
+
+.total-hours {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.full-width-table {
+  width: 100%;
+}
+
+.loading-shade {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #666;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.notes-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90vw;
+}
+
+.dialog-content h2 {
+  margin: 0 0 16px;
+  font-weight: 400;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.info-text {
+  color: #666;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}

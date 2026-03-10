@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { ShellComponent } from './shell/shell.component';
 import { authGuard } from './core/auth.guard';
+import { adminGuard } from './core/admin.guard';
 import { ClientsComponent } from './clients/clients.component';
 import { ProjectsComponent } from './projects/projects.component';
 import { EmployeesComponent } from './employees/employees.component';
@@ -14,11 +15,11 @@ export const routes: Routes = [
     component: ShellComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'clients', component: ClientsComponent },
-      { path: 'projects', component: ProjectsComponent },
-      { path: 'employees', component: EmployeesComponent },
+      { path: 'clients', component: ClientsComponent, canActivate: [adminGuard] },
+      { path: 'projects', component: ProjectsComponent, canActivate: [adminGuard] },
+      { path: 'employees', component: EmployeesComponent, canActivate: [adminGuard] },
       { path: 'timesheets', component: TimesheetsComponent },
-      { path: '', redirectTo: 'clients', pathMatch: 'full' }
+      { path: '', redirectTo: 'timesheets', pathMatch: 'full' }
     ]
   },
   { path: '**', redirectTo: 'login' }

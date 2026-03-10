@@ -1,6 +1,103 @@
-<h1>Clients</h1>
+<div class="page-header">
+  <h1>Clients</h1>
+  @if (isAdmin()) {
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>add</mat-icon>
+      Add Client
+    </button>
+  }
+</div>
+
 <mat-card>
   <mat-card-content>
-    <p>Client list will appear here.</p>
+    @if (loading()) {
+      <div class="loading-shade">Loading...</div>
+    }
+
+    <table mat-table [dataSource]="clients()" class="full-width-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let client">{{ client.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="contactEmail">
+        <th mat-header-cell *matHeaderCellDef>Contact Email</th>
+        <td mat-cell *matCellDef="let client">{{ client.contactEmail }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="isActive">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let client">
+          <span [class.active-status]="client.isActive" [class.inactive-status]="!client.isActive">
+            {{ client.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Created</th>
+        <td mat-cell *matCellDef="let client">{{ client.createdAt | date:'mediumDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let client">
+          @if (isAdmin()) {
+            <button mat-icon-button color="primary" (click)="openEditDialog(client)" title="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteClient(client)" title="Deactivate">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    @if (clients().length === 0 && !loading()) {
+      <p class="no-data">No clients found.</p>
+    }
   </mat-card-content>
 </mat-card>
+
+@if (dialogOpen()) {
+  <div class="dialog-overlay" (click)="closeDialog()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+      <h2>{{ editingClient() ? 'Edit Client' : 'Add Client' }}</h2>
+      <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" placeholder="Client name">
+          @if (clientForm.get('name')?.hasError('required')) {
+            <mat-error>Name is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contact Email</mat-label>
+          <input matInput formControlName="contactEmail" type="email" placeholder="email@example.com">
+          @if (clientForm.get('contactEmail')?.hasError('required')) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (clientForm.get('contactEmail')?.hasError('email')) {
+            <mat-error>Invalid email format</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-slide-toggle formControlName="isActive" class="active-toggle">
+          Active
+        </mat-slide-toggle>
+
+        <div class="dialog-actions">
+          <button mat-button type="button" (click)="closeDialog()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="clientForm.invalid">
+            {{ editingClient() ? 'Update' : 'Create' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

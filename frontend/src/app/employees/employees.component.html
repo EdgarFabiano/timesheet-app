@@ -1,6 +1,124 @@
-<h1>Employees</h1>
+<div class="page-header">
+  <h1>Employees</h1>
+  @if (isAdmin()) {
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>add</mat-icon>
+      Add Employee
+    </button>
+  }
+</div>
+
 <mat-card>
   <mat-card-content>
-    <p>Employee list will appear here.</p>
+    @if (loading()) {
+      <div class="loading-shade">Loading...</div>
+    }
+
+    <table mat-table [dataSource]="employees()" class="full-width-table">
+      <ng-container matColumnDef="fullName">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let employee">{{ employee.fullName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let employee">{{ employee.email }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="department">
+        <th mat-header-cell *matHeaderCellDef>Department</th>
+        <td mat-cell *matCellDef="let employee">{{ employee.department }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="isActive">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let employee">
+          <span [class.active-status]="employee.isActive" [class.inactive-status]="!employee.isActive">
+            {{ employee.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Created</th>
+        <td mat-cell *matCellDef="let employee">{{ employee.createdAt | date:'mediumDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let employee">
+          @if (isAdmin()) {
+            <button mat-icon-button color="primary" (click)="openEditDialog(employee)" title="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteEmployee(employee)" title="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    @if (employees().length === 0 && !loading()) {
+      <p class="no-data">No employees found.</p>
+    }
   </mat-card-content>
 </mat-card>
+
+@if (dialogOpen()) {
+  <div class="dialog-overlay" (click)="closeDialog()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+      <h2>{{ editingEmployee() ? 'Edit Employee' : 'Add Employee' }}</h2>
+      <form [formGroup]="employeeForm" (ngSubmit)="saveEmployee()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Azure AD Object ID</mat-label>
+          <input matInput formControlName="azureAdObjectId" placeholder="Azure AD Object ID">
+          @if (employeeForm.get('azureAdObjectId')?.hasError('required')) {
+            <mat-error>Azure AD Object ID is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full Name</mat-label>
+          <input matInput formControlName="fullName" placeholder="Full name">
+          @if (employeeForm.get('fullName')?.hasError('required')) {
+            <mat-error>Full name is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="email@example.com">
+          @if (employeeForm.get('email')?.hasError('required')) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (employeeForm.get('email')?.hasError('email')) {
+            <mat-error>Invalid email format</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Department</mat-label>
+          <input matInput formControlName="department" placeholder="Department">
+          @if (employeeForm.get('department')?.hasError('required')) {
+            <mat-error>Department is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-slide-toggle formControlName="isActive" class="active-toggle">
+          Active
+        </mat-slide-toggle>
+
+        <div class="dialog-actions">
+          <button mat-button type="button" (click)="closeDialog()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="employeeForm.invalid">
+            {{ editingEmployee() ? 'Update' : 'Create' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

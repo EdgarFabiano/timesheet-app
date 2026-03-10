@@ -21,6 +21,12 @@
   flex: 1 1 auto;
 }
 
+.user-info {
+  font-size: 14px;
+  margin-right: 16px;
+  opacity: 0.9;
+}
+
 .content {
   padding: 24px;
 }

@@ -1,6 +1,130 @@
-<h1>Projects</h1>
+<div class="page-header">
+  <h1>Projects</h1>
+  @if (isAdmin()) {
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>add</mat-icon>
+      Add Project
+    </button>
+  }
+</div>
+
 <mat-card>
   <mat-card-content>
-    <p>Project list will appear here.</p>
+    @if (loading()) {
+      <div class="loading-shade">Loading...</div>
+    }
+
+    <table mat-table [dataSource]="projects()" class="full-width-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let project">{{ project.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="clientName">
+        <th mat-header-cell *matHeaderCellDef>Client</th>
+        <td mat-cell *matCellDef="let project">{{ project.clientName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef>Start Date</th>
+        <td mat-cell *matCellDef="let project">{{ project.startDate | date:'mediumDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef>End Date</th>
+        <td mat-cell *matCellDef="let project">{{ project.endDate ? (project.endDate | date:'mediumDate') : 'Ongoing' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="isActive">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let project">
+          <span [class.active-status]="project.isActive" [class.inactive-status]="!project.isActive">
+            {{ project.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let project">
+          @if (isAdmin()) {
+            <button mat-icon-button color="primary" (click)="openEditDialog(project)" title="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteProject(project)" title="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    @if (projects().length === 0 && !loading()) {
+      <p class="no-data">No projects found.</p>
+    }
   </mat-card-content>
 </mat-card>
+
+@if (dialogOpen()) {
+  <div class="dialog-overlay" (click)="closeDialog()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+      <h2>{{ editingProject() ? 'Edit Project' : 'Add Project' }}</h2>
+      <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Project Name</mat-label>
+          <input matInput formControlName="name" placeholder="Project name">
+          @if (projectForm.get('name')?.hasError('required')) {
+            <mat-error>Name is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" placeholder="Project description" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Client</mat-label>
+          <mat-select formControlName="clientId">
+            @for (client of clients(); track client.id) {
+              <mat-option [value]="client.id">{{ client.name }}</mat-option>
+            }
+          </mat-select>
+          @if (projectForm.get('clientId')?.hasError('required')) {
+            <mat-error>Client is required</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="date-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+            <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+            <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <mat-slide-toggle formControlName="isActive" class="active-toggle">
+          Active
+        </mat-slide-toggle>
+
+        <div class="dialog-actions">
+          <button mat-button type="button" (click)="closeDialog()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="projectForm.invalid">
+            {{ editingProject() ? 'Update' : 'Create' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
