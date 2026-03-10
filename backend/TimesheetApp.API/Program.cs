@@ -44,7 +44,7 @@ builder.Services.AddScoped<TimesheetService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var jwtKey = builder.Environment.IsEnvironment("Test") 
+        var jwtKey = builder.Environment.IsEnvironment("Test")
             ? "SuperSecretTestKey12345678901234567890"
             : builder.Configuration["Jwt:Key"]!;
         var jwtIssuer = builder.Environment.IsEnvironment("Test")

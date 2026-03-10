@@ -25,22 +25,22 @@ public class AuthService
         if (await _db.Users.AnyAsync(u => u.Email == request.Email))
             return null;
 
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = request.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Role = request.Role
+        };
+
         var employee = new Employee
         {
             Id = Guid.NewGuid(),
             FullName = request.FullName,
             Email = request.Email,
             Department = request.Department,
-            AzureAdObjectId = Guid.NewGuid().ToString()
-        };
-
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = request.Role,
-            Employee = employee
+            AzureAdObjectId = Guid.NewGuid().ToString(),
+            UserId = user.Id
         };
 
         _db.Employees.Add(employee);

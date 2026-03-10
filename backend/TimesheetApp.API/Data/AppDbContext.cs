@@ -37,10 +37,10 @@ public class AppDbContext : DbContext
             .HasIndex(u => u.Email)
             .IsUnique();
 
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.Employee)
+        modelBuilder.Entity<Employee>()
+            .HasOne(e => e.User)
             .WithOne()
-            .HasForeignKey<User>(u => u.EmployeeId)
+            .HasForeignKey<Employee>(e => e.UserId)
             .IsRequired(false);
     }
 }

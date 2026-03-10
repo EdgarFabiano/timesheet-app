@@ -14,7 +14,4 @@ public class User
     public UserRole Role { get; set; } = UserRole.Employee;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public Guid? EmployeeId { get; set; }
-    public Employee? Employee { get; set; }
 }

@@ -24,11 +24,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             var toRemove = services
-                .Where(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>) || 
+                .Where(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
                            d.ServiceType == typeof(AppDbContext) ||
                            (d.ServiceType.IsGenericType && d.ServiceType.GetGenericTypeDefinition() == typeof(DbContextOptions<>)))
                 .ToList();
-            
+
             foreach (var descriptor in toRemove)
             {
                 services.Remove(descriptor);
@@ -69,7 +69,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             Department = "Engineering",
             AzureAdObjectId = "azure-123",
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = employeeUserId
         };
         context.Employees.Add(employee);
 
@@ -81,7 +82,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             Department = "Management",
             AzureAdObjectId = "azure-admin",
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = adminUserId
         };
         context.Employees.Add(adminEmployee);
 
@@ -104,7 +106,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             Email = "admin@test.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
             Role = UserRole.Admin,
-            EmployeeId = adminEmployee.Id,
             CreatedAt = DateTime.UtcNow
         };
         context.Users.Add(adminUser);
@@ -115,7 +116,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             Email = "employee@test.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
             Role = UserRole.Employee,
-            EmployeeId = employee.Id,
             CreatedAt = DateTime.UtcNow
         };
         context.Users.Add(employeeUser);

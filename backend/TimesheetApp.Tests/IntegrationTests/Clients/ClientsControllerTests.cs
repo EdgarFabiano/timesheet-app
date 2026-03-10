@@ -98,7 +98,7 @@ public class ClientsControllerTests : BaseControllerTests
         var createRequest = new CreateClientRequest(Name: "ToDelete", ContactEmail: "delete@test.com", IsActive: true);
         var createResponse = await createClient.PostAsJsonAsync("/api/clients", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<ClientResponse>();
-        
+
         var client = CreateClientWithToken("Admin");
         var response = await client.DeleteAsync($"/api/clients/{created!.Id}");
 

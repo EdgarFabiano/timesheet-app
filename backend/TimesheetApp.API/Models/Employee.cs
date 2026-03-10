@@ -10,6 +10,9 @@ public class Employee
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public Guid? UserId { get; set; }
+    public User? User { get; set; }
+
     public ICollection<Assignment> Assignments { get; set; } = [];
     public ICollection<Timesheet> Timesheets { get; set; } = [];
 }

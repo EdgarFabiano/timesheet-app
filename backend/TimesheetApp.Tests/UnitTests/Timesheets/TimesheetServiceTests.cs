@@ -156,7 +156,7 @@ public class TimesheetServiceTests
         var context = CreateContextWithEmployeeAndProject();
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
         var endDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        
+
         context.Timesheets.AddRange(
             new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = startDate.AddDays(1), HoursWorked = 8.0m, CreatedAt = DateTime.UtcNow },
             new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = endDate.AddDays(-1), HoursWorked = 8.0m, CreatedAt = DateTime.UtcNow },
@@ -176,7 +176,7 @@ public class TimesheetServiceTests
         var context = CreateContextWithEmployeeAndProject();
         var employeeId2 = Guid.NewGuid();
         context.Employees.Add(new Employee { Id = employeeId2, FullName = "Employee 2", Email = "emp2@test.com", AzureAdObjectId = "azure-2", Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow });
-        
+
         context.Timesheets.AddRange(
             new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = DateOnly.FromDateTime(DateTime.UtcNow), HoursWorked = 8.0m, CreatedAt = DateTime.UtcNow },
             new Timesheet { Id = Guid.NewGuid(), EmployeeId = employeeId2, ProjectId = _projectId, Date = DateOnly.FromDateTime(DateTime.UtcNow), HoursWorked = 8.0m, CreatedAt = DateTime.UtcNow }
@@ -195,7 +195,7 @@ public class TimesheetServiceTests
         var context = CreateContextWithEmployeeAndProject();
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
         var endDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        
+
         context.Timesheets.AddRange(
             new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = startDate.AddDays(1), HoursWorked = 8.0m, CreatedAt = DateTime.UtcNow },
             new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = endDate.AddDays(5), HoursWorked = 8.0m, CreatedAt = DateTime.UtcNow }

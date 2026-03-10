@@ -16,8 +16,8 @@ public abstract class BaseControllerTests : IClassFixture<CustomWebApplicationFa
     {
         var client = Factory.CreateClient();
         var token = Helpers.JwtTokenHelper.GenerateToken(
-            role == "Admin" 
-                ? Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") 
+            role == "Admin"
+                ? Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                 : Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
             role,
             role == "Admin" ? "admin@test.com" : "employee@test.com");

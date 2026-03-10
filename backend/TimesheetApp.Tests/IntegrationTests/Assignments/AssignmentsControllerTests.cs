@@ -63,13 +63,13 @@ public class AssignmentsControllerTests : BaseControllerTests
             ProjectId: Guid.Parse("77777777-7777-7777-7777-777777777777"),
             IsActive: true);
         var createResponse = await createClient.PostAsJsonAsync("/api/assignments", createRequest);
-        
+
         if (!createResponse.IsSuccessStatusCode)
         {
             var errorContent = await createResponse.Content.ReadAsStringAsync();
             Assert.Fail($"POST failed with {createResponse.StatusCode}: {errorContent}");
         }
-        
+
         var created = await createResponse.Content.ReadFromJsonAsync<AssignmentResponse>();
 
         var client = CreateClientWithToken("Admin");
@@ -83,11 +83,11 @@ public class AssignmentsControllerTests : BaseControllerTests
     {
         var employeeId = Guid.NewGuid();
         var projectId = Guid.NewGuid();
-        
+
         var setupClient = CreateClientWithToken("Admin");
         var clientId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         await setupClient.PostAsJsonAsync("/api/clients", new CreateClientRequest("SetupClient", "setup@test.com", true));
-        
+
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<API.Data.AppDbContext>();
         context.Employees.Add(new Employee { Id = employeeId, FullName = "New Emp", Email = "newemp@test.com", AzureAdObjectId = "azure-new", Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow });
@@ -131,7 +131,7 @@ public class AssignmentsControllerTests : BaseControllerTests
     {
         var employeeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var projectId = Guid.Parse("44444444-4444-4444-4444-444444444444");
-        
+
         var setupClient = CreateClientWithToken("Admin");
         var createRequest = new CreateAssignmentRequest(EmployeeId: employeeId, ProjectId: projectId, IsActive: true);
         await setupClient.PostAsJsonAsync("/api/assignments", createRequest);
@@ -149,7 +149,7 @@ public class AssignmentsControllerTests : BaseControllerTests
     {
         var employeeId = Guid.NewGuid();
         var projectId = Guid.NewGuid();
-        
+
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<API.Data.AppDbContext>();
         var clientId = Guid.Parse("11111111-1111-1111-1111-111111111111");
