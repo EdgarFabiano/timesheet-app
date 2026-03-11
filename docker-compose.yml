@@ -1,4 +1,18 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: timesheet-db
+    environment:
+      POSTGRES_DB: timesheet
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - timesheet-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build:
       context: ./backend/TimesheetApp.API
@@ -8,9 +22,11 @@ services:
       - "5282:5282"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Host=localhost;Database=timesheet;Username=postgres;Password=postgres}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=timesheet;Username=postgres;Password=postgres
     networks:
       - timesheet-network
+    depends_on:
+      - postgres
 
   frontend:
     build:
@@ -29,3 +45,6 @@ services:
 networks:
   timesheet-network:
     driver: bridge
+
+volumes:
+  postgres_data:
