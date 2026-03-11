@@ -1,0 +1,31 @@
+services:
+  backend:
+    build:
+      context: ./backend/TimesheetApp.API
+      dockerfile: Dockerfile
+    container_name: timesheet-backend
+    ports:
+      - "5282:5282"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Host=localhost;Database=timesheet;Username=postgres;Password=postgres}
+    networks:
+      - timesheet-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: timesheet-frontend
+    ports:
+      - "8080:80"
+    environment:
+      - BACKEND_URL=backend:5282
+    depends_on:
+      - backend
+    networks:
+      - timesheet-network
+
+networks:
+  timesheet-network:
+    driver: bridge
