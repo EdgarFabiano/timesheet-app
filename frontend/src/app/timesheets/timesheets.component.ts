@@ -133,11 +133,12 @@ export class TimesheetsComponent implements OnInit {
             this.selectedEmployeeId.set(currentEmp.id);
           }
         }
+        this.loadTimesheets();
       },
-      error: () => {}
+      error: () => {
+        this.loading.set(false);
+      }
     });
-
-    this.loadTimesheets();
   }
 
   loadTimesheets(): void {
