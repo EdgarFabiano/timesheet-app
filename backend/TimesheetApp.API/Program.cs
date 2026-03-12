@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TimesheetApp.API;
 using TimesheetApp.API.Data;
 using TimesheetApp.API.Services;
 
@@ -74,7 +75,27 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    var maxRetries = 10;
+    for (var i = 0; i < maxRetries; i++)
+    {
+        try
+        {
+            db.Database.Migrate();
+            break;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Database not ready, retrying ({RetryCount}/{MaxRetries})...", i + 1, maxRetries);
+            Thread.Sleep(2000);
+        }
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        DbSeeder.Seed(db);
+    }
 }
 
 if (app.Environment.IsDevelopment())
