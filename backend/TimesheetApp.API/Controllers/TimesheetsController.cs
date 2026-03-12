@@ -87,4 +87,15 @@ public class TimesheetsController : ControllerBase
 
         return Ok(timesheet);
     }
+
+    /// <summary>Delete a timesheet entry.</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var deleted = await _timesheetService.DeleteAsync(id);
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
+    }
 }

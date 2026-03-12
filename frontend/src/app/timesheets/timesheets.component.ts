@@ -60,7 +60,13 @@ export class TimesheetsComponent implements OnInit {
   weekStart = signal<Date>(this.getWeekStart(new Date()));
   weekEnd = signal<Date>(this.getWeekEnd(new Date()));
 
-  displayedColumns: string[] = ['date', 'employeeName', 'projectName', 'hoursWorked', 'notes', 'actions'];
+  displayedColumns = computed(() => {
+    const cols = ['date', 'projectName', 'hoursWorked', 'notes', 'actions'];
+    if (this.isAdmin()) {
+      cols.splice(1, 0, 'employeeName');
+    }
+    return cols;
+  });
   dataSource = new MatTableDataSource<Timesheet>();
   
   dialogOpen = signal(false);
@@ -88,7 +94,7 @@ export class TimesheetsComponent implements OnInit {
   private getWeekStart(date: Date): Date {
     const d = new Date(date);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const diff = d.getDate() - day;
     d.setDate(diff);
     d.setHours(0, 0, 0, 0);
     return d;
@@ -103,7 +109,10 @@ export class TimesheetsComponent implements OnInit {
   }
 
   private formatDateForApi(date: Date): string {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   loadData(): void {

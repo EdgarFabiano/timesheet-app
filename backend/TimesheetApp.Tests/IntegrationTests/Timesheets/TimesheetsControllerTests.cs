@@ -255,4 +255,45 @@ public class TimesheetsControllerTests : BaseControllerTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Delete_Should_Return204_WhenValid()
+    {
+        var createClient = CreateClientWithToken("Admin");
+        var employeeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var projectId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var createRequest = new CreateTimesheetRequest(
+            EmployeeId: employeeId,
+            ProjectId: projectId,
+            Date: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
+            HoursWorked: 8.0m,
+            Notes: "To be deleted");
+        var createResponse = await createClient.PostAsJsonAsync("/api/timesheets", createRequest);
+        var created = await createResponse.Content.ReadFromJsonAsync<TimesheetResponse>();
+
+        var client = CreateClientWithToken("Admin");
+        var response = await client.DeleteAsync($"/api/timesheets/{created!.Id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Should_Return404_WhenNotFound()
+    {
+        var client = CreateClientWithToken("Admin");
+
+        var response = await client.DeleteAsync($"/api/timesheets/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Should_Return401_WhenNotAuthenticated()
+    {
+        var client = CreateClientWithoutToken();
+
+        var response = await client.DeleteAsync($"/api/timesheets/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 }

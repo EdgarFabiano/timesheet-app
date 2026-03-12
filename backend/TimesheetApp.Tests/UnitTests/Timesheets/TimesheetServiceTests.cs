@@ -242,4 +242,39 @@ public class TimesheetServiceTests
 
         Assert.Null(result);
     }
+
+    [Fact]
+    public async Task DeleteAsync_Should_DeleteTimesheet_WhenExists()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var timesheetId = Guid.NewGuid();
+        context.Timesheets.Add(new Timesheet
+        {
+            Id = timesheetId,
+            EmployeeId = _employeeId,
+            ProjectId = _projectId,
+            Date = DateOnly.FromDateTime(DateTime.UtcNow),
+            HoursWorked = 8.0m,
+            CreatedAt = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+
+        var service = new TimesheetService(context);
+
+        var result = await service.DeleteAsync(timesheetId);
+
+        Assert.True(result);
+        Assert.Null(await context.Timesheets.FindAsync(timesheetId));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Should_ReturnFalse_WhenNotFound()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var service = new TimesheetService(context);
+
+        var result = await service.DeleteAsync(Guid.NewGuid());
+
+        Assert.False(result);
+    }
 }

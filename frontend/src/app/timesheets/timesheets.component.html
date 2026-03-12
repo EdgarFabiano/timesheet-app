@@ -65,12 +65,10 @@
         <td mat-cell *matCellDef="let timesheet">{{ timesheet.date | date:'mediumDate' }}</td>
       </ng-container>
 
-      @if (isAdmin()) {
-        <ng-container matColumnDef="employeeName">
-          <th mat-header-cell *matHeaderCellDef>Employee</th>
-          <td mat-cell *matCellDef="let timesheet">{{ timesheet.employeeName }}</td>
-        </ng-container>
-      }
+      <ng-container matColumnDef="employeeName">
+        <th mat-header-cell *matHeaderCellDef>Employee</th>
+        <td mat-cell *matCellDef="let timesheet">{{ timesheet.employeeName }}</td>
+      </ng-container>
 
       <ng-container matColumnDef="projectName">
         <th mat-header-cell *matHeaderCellDef>Project</th>
@@ -101,8 +99,8 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
     </table>
 
     @if (timesheets().length === 0 && !loading()) {

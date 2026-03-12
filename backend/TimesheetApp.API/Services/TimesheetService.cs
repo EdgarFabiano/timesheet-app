@@ -142,6 +142,19 @@ public class TimesheetService
         return MapToResponse(timesheet);
     }
 
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var timesheet = await _db.Timesheets.FirstOrDefaultAsync(t => t.Id == id);
+
+        if (timesheet == null)
+            return false;
+
+        _db.Timesheets.Remove(timesheet);
+        await _db.SaveChangesAsync();
+
+        return true;
+    }
+
     private static TimesheetResponse MapToResponse(Timesheet t)
     {
         return new TimesheetResponse(
