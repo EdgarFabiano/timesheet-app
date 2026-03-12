@@ -30,6 +30,12 @@ export class TimesheetsService {
     );
   }
 
+  getWithFilters(params: HttpParams): Observable<Timesheet[]> {
+    return this.http.get<Timesheet[]>(this.apiUrl, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   getById(id: string): Observable<Timesheet | null> {
     return this.http.get<Timesheet>(`${this.apiUrl}/${id}`).pipe(
       catchError(this.handleErrorById)

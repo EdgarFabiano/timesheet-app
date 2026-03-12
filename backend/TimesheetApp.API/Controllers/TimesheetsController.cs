@@ -17,18 +17,16 @@ public class TimesheetsController : ControllerBase
         _timesheetService = timesheetService;
     }
 
-    /// <summary>Get timesheets. Filter by employeeId + startDate/endDate, or by projectId (optional startDate/endDate).</summary>
+    /// <summary>Get timesheets. Filter by employeeId and/or projectId with optional startDate/endDate.</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TimesheetResponse>>> GetAll(
         [FromQuery] Guid? employeeId,
+        [FromQuery] Guid? projectId,
         [FromQuery] DateOnly? startDate,
-        [FromQuery] DateOnly? endDate,
-        [FromQuery] Guid? projectId)
+        [FromQuery] DateOnly? endDate)
     {
-        if (employeeId.HasValue)
+        if (employeeId.HasValue && startDate.HasValue && endDate.HasValue)
         {
-            if (!startDate.HasValue || !endDate.HasValue)
-                return BadRequest("When filtering by employeeId, both startDate and endDate are required.");
             if (startDate.Value > endDate.Value)
                 return BadRequest("startDate must be before or equal to endDate.");
 
@@ -36,6 +34,12 @@ public class TimesheetsController : ControllerBase
                 employeeId.Value,
                 startDate.Value,
                 endDate.Value);
+
+            if (projectId.HasValue)
+            {
+                timesheets = timesheets.Where(t => t.ProjectId == projectId.Value).ToList();
+            }
+
             return Ok(timesheets);
         }
 
@@ -46,6 +50,11 @@ public class TimesheetsController : ControllerBase
                 startDate,
                 endDate);
             return Ok(timesheets);
+        }
+
+        if (employeeId.HasValue)
+        {
+            return BadRequest("When filtering by employeeId, both startDate and endDate are required.");
         }
 
         return BadRequest("Provide employeeId with startDate/endDate, or projectId to list timesheets.");

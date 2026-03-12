@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, computed, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpParams } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -149,33 +150,28 @@ export class TimesheetsComponent implements OnInit {
     const startDate = this.formatDateForApi(this.weekStart());
     const endDate = this.formatDateForApi(this.weekEnd());
 
+    let params = new HttpParams()
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+    
     if (employeeId) {
-      this.timesheetsService.getByEmployeeAndDateRange(employeeId, startDate, endDate).subscribe({
-        next: (data) => {
-          this.timesheets.set(data);
-          this.dataSource.data = data;
-          this.loading.set(false);
-        },
-        error: () => {
-          this.snackBar.open('Failed to load timesheets', 'Close', { duration: 3000 });
-          this.loading.set(false);
-        }
-      });
-    } else if (projectId) {
-      this.timesheetsService.getByProject(projectId, startDate, endDate).subscribe({
-        next: (data) => {
-          this.timesheets.set(data);
-          this.dataSource.data = data;
-          this.loading.set(false);
-        },
-        error: () => {
-          this.snackBar.open('Failed to load timesheets', 'Close', { duration: 3000 });
-          this.loading.set(false);
-        }
-      });
-    } else {
-      this.loading.set(false);
+      params = params.set('employeeId', employeeId);
     }
+    if (projectId) {
+      params = params.set('projectId', projectId);
+    }
+
+    this.timesheetsService.getWithFilters(params).subscribe({
+      next: (data) => {
+        this.timesheets.set(data);
+        this.dataSource.data = data;
+        this.loading.set(false);
+      },
+      error: () => {
+        this.snackBar.open('Failed to load timesheets', 'Close', { duration: 3000 });
+        this.loading.set(false);
+      }
+    });
   }
 
   onWeekChange(direction: 'prev' | 'next'): void {
