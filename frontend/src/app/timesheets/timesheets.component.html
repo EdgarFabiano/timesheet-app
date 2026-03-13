@@ -37,6 +37,16 @@
           </mat-select>
         </mat-form-field>
       }
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Project</mat-label>
+        <mat-select [value]="selectedProjectId()" (selectionChange)="selectedProjectId.set($event.value)">
+          <mat-option [value]="null">All Projects</mat-option>
+          @for (proj of projects(); track proj.id) {
+            <mat-option [value]="proj.id">{{ proj.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
     </div>
 
     <div class="total-hours">
@@ -52,7 +62,7 @@
     }
 
     <div class="table-container">
-      <table mat-table [dataSource]="timesheetRows()" class="timesheet-grid">
+      <table mat-table [dataSource]="filteredTimesheetRows()" class="timesheet-grid">
         <ng-container matColumnDef="project">
           <th mat-header-cell *matHeaderCellDef>Project</th>
           <td mat-cell *matCellDef="let row" class="project-cell">
@@ -119,7 +129,7 @@
       </table>
     </div>
 
-    @if (timesheetRows().length === 0 && !loading()) {
+    @if (filteredTimesheetRows().length === 0 && !loading()) {
       <p class="no-data">No projects available for timesheet entry.</p>
     }
   </mat-card-content>

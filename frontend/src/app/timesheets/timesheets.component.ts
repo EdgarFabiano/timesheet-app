@@ -67,6 +67,7 @@ export class TimesheetsComponent implements OnInit {
   isAdmin = signal(false);
   
   selectedEmployeeId = signal<string | null>(null);
+  selectedProjectId = signal<string | null>(null);
   weekStart = signal<Date>(this.getWeekStart(new Date()));
   weekEnd = signal<Date>(this.getWeekEnd(new Date()));
 
@@ -93,12 +94,20 @@ export class TimesheetsComponent implements OnInit {
 
   weeklyTotal = computed(() => {
     let total = 0;
-    this.weekDays().forEach(day => {
-      this.timesheetRows().forEach(row => {
+    this.filteredTimesheetRows().forEach(row => {
+      this.weekDays().forEach(day => {
         total += row.days[day.dateStr]?.hours || 0;
       });
     });
     return total;
+  });
+
+  filteredTimesheetRows = computed(() => {
+    const projectId = this.selectedProjectId();
+    if (!projectId) {
+      return this.timesheetRows();
+    }
+    return this.timesheetRows().filter(row => row.project.id === projectId);
   });
 
   hasChanges = computed(() => {
