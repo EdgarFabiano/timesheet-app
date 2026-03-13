@@ -296,4 +296,114 @@ public class TimesheetsControllerTests : BaseControllerTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task BulkSave_Should_Return200_WhenValid()
+    {
+        var client = CreateClientWithToken("Admin");
+        var employeeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var projectId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(projectId, DateOnly.FromDateTime(DateTime.UtcNow), 8.0m, "Day 1"),
+                new(projectId, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)), 7.5m, "Day 2")
+            });
+
+        var response = await client.PostAsJsonAsync("/api/timesheets/bulk", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<BulkSaveTimesheetResponse>();
+        Assert.Empty(result!.Errors);
+        Assert.Equal(2, result.Saved.Count);
+    }
+
+    [Fact]
+    public async Task BulkSave_Should_Return400_WhenEmployeeNotFound()
+    {
+        var client = CreateClientWithToken("Admin");
+        var projectId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: Guid.NewGuid(),
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(projectId, DateOnly.FromDateTime(DateTime.UtcNow), 8.0m, null)
+            });
+
+        var response = await client.PostAsJsonAsync("/api/timesheets/bulk", request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<BulkSaveTimesheetResponse>();
+        Assert.NotEmpty(result!.Errors);
+    }
+
+    [Fact]
+    public async Task BulkSave_Should_Return400WithPartialErrors_WhenSomeProjectsInvalid()
+    {
+        var client = CreateClientWithToken("Admin");
+        var employeeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var validProjectId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var invalidProjectId = Guid.NewGuid();
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(invalidProjectId, DateOnly.FromDateTime(DateTime.UtcNow), 8.0m, null),
+                new(validProjectId, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)), 8.0m, null)
+            });
+
+        var response = await client.PostAsJsonAsync("/api/timesheets/bulk", request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<BulkSaveTimesheetResponse>();
+        Assert.NotEmpty(result!.Errors);
+        Assert.Contains(result.Errors, e => e.Contains("Project"));
+    }
+
+    [Fact]
+    public async Task BulkSave_Should_Return401_WhenNotAuthenticated()
+    {
+        var client = CreateClientWithoutToken();
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: Guid.NewGuid(),
+            Entries: new List<BulkTimesheetEntry>());
+
+        var response = await client.PostAsJsonAsync("/api/timesheets/bulk", request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task BulkSave_Should_UpdateExistingEntries()
+    {
+        var createClient = CreateClientWithToken("Admin");
+        var employeeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var projectId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        
+        var createRequest = new CreateTimesheetRequest(
+            EmployeeId: employeeId,
+            ProjectId: projectId,
+            Date: date,
+            HoursWorked: 4.0m,
+            Notes: "Existing");
+        await createClient.PostAsJsonAsync("/api/timesheets", createRequest);
+
+        var client = CreateClientWithToken("Admin");
+        var bulkRequest = new BulkSaveTimesheetRequest(
+            EmployeeId: employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(projectId, date, 8.0m, "Updated")
+            });
+
+        var response = await client.PostAsJsonAsync("/api/timesheets/bulk", bulkRequest);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<BulkSaveTimesheetResponse>();
+        Assert.Empty(result!.Errors);
+        Assert.Single(result.Saved);
+        Assert.Equal(8.0m, result.Saved[0].HoursWorked);
+    }
 }

@@ -26,3 +26,20 @@ public record TimesheetResponse(
     string? Notes,
     DateTime CreatedAt
 );
+
+public record BulkTimesheetEntry(
+    [Required] Guid ProjectId,
+    [Required] DateOnly Date,
+    [Required, Range(0, 24, ErrorMessage = "Hours must be between 0 and 24.")] decimal HoursWorked,
+    [MaxLength(2000)] string? Notes = null
+);
+
+public record BulkSaveTimesheetRequest(
+    [Required] Guid EmployeeId,
+    [Required] List<BulkTimesheetEntry> Entries
+);
+
+public record BulkSaveTimesheetResponse(
+    IReadOnlyList<TimesheetResponse> Saved,
+    IReadOnlyList<string> Errors
+);

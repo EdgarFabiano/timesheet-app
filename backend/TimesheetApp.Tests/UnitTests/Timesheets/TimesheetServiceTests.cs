@@ -277,4 +277,195 @@ public class TimesheetServiceTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_CreateNewEntries_WhenValid()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var projectId2 = Guid.NewGuid();
+        context.Projects.Add(new Project { Id = projectId2, Name = "Project 2", IsActive = true, CreatedAt = DateTime.UtcNow });
+        await context.SaveChangesAsync();
+
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: _employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(_projectId, DateOnly.FromDateTime(DateTime.UtcNow), 8.0m, "Day 1 work"),
+                new(_projectId, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)), 7.5m, "Day 2 work"),
+                new(projectId2, DateOnly.FromDateTime(DateTime.UtcNow), 6.0m, "Other project")
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(3, result.Saved.Count);
+    }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_UpdateExistingEntries_WhenTimesheetExists()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var date1 = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date2 = date1.AddDays(1);
+        
+        context.Timesheets.AddRange(
+            new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = date1, HoursWorked = 4.0m, CreatedAt = DateTime.UtcNow },
+            new Timesheet { Id = Guid.NewGuid(), EmployeeId = _employeeId, ProjectId = _projectId, Date = date2, HoursWorked = 3.0m, CreatedAt = DateTime.UtcNow }
+        );
+        await context.SaveChangesAsync();
+
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: _employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(_projectId, date1, 8.0m, "Updated"),
+                new(_projectId, date2, 7.5m, "Updated 2")
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(2, result.Saved.Count);
+        var entry1 = result.Saved.First(s => s.Date == date1);
+        var entry2 = result.Saved.First(s => s.Date == date2);
+        Assert.Equal(8.0m, entry1.HoursWorked);
+        Assert.Equal("Updated", entry1.Notes);
+        Assert.Equal(7.5m, entry2.HoursWorked);
+    }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_SkipEntriesWithZeroHours()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: _employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(_projectId, date, 0m, "Zero hours"),
+                new(_projectId, date.AddDays(1), 8.0m, "Valid hours")
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.Empty(result.Errors);
+        Assert.Single(result.Saved);
+        Assert.Equal(8.0m, result.Saved[0].HoursWorked);
+    }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_ReturnError_WhenEmployeeNotFound()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: Guid.NewGuid(),
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(_projectId, DateOnly.FromDateTime(DateTime.UtcNow), 8.0m, null)
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.NotEmpty(result.Errors);
+        Assert.Contains(result.Errors, e => e.Contains("Employee"));
+        Assert.Empty(result.Saved);
+    }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_ReturnErrorForInvalidProject()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var invalidProjectId = Guid.NewGuid();
+        
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: _employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(invalidProjectId, DateOnly.FromDateTime(DateTime.UtcNow), 8.0m, null),
+                new(_projectId, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)), 8.0m, null)
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.NotEmpty(result.Errors);
+        Assert.Contains(result.Errors, e => e.Contains("Project"));
+        Assert.Single(result.Saved);
+    }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_MixNewAndExistingEntries()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var projectId2 = Guid.NewGuid();
+        context.Projects.Add(new Project { Id = projectId2, Name = "Project 2", IsActive = true, CreatedAt = DateTime.UtcNow });
+        await context.SaveChangesAsync();
+
+        var existingDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        context.Timesheets.Add(new Timesheet 
+        { 
+            Id = Guid.NewGuid(), 
+            EmployeeId = _employeeId, 
+            ProjectId = _projectId, 
+            Date = existingDate, 
+            HoursWorked = 2.0m, 
+            CreatedAt = DateTime.UtcNow 
+        });
+        await context.SaveChangesAsync();
+
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: _employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(_projectId, existingDate, 8.0m, "Updated existing"),
+                new(_projectId, existingDate.AddDays(1), 7.0m, "New entry"),
+                new(projectId2, existingDate, 6.0m, "New project entry")
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(3, result.Saved.Count);
+    }
+
+    [Fact]
+    public async Task BulkSaveAsync_Should_PreserveEntriesForOtherWeeks()
+    {
+        var context = CreateContextWithEmployeeAndProject();
+        var currentWeekDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lastWeekDate = currentWeekDate.AddDays(-7);
+
+        context.Timesheets.Add(new Timesheet 
+        { 
+            Id = Guid.NewGuid(), 
+            EmployeeId = _employeeId, 
+            ProjectId = _projectId, 
+            Date = lastWeekDate, 
+            HoursWorked = 8.0m, 
+            CreatedAt = DateTime.UtcNow 
+        });
+        await context.SaveChangesAsync();
+
+        var service = new TimesheetService(context);
+        var request = new BulkSaveTimesheetRequest(
+            EmployeeId: _employeeId,
+            Entries: new List<BulkTimesheetEntry>
+            {
+                new(_projectId, currentWeekDate, 8.0m, null)
+            });
+
+        var result = await service.BulkSaveAsync(request);
+
+        Assert.Empty(result.Errors);
+        Assert.Single(result.Saved);
+        var allTimesheets = context.Timesheets.ToList();
+        Assert.Equal(2, allTimesheets.Count);
+    }
 }

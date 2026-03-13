@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
-import { Timesheet, CreateTimesheetRequest, UpdateTimesheetRequest } from '../timesheets/timesheet.model';
+import { Timesheet, CreateTimesheetRequest, UpdateTimesheetRequest, BulkSaveRequest, BulkSaveResponse } from '../timesheets/timesheet.model';
 
 @Injectable({ providedIn: 'root' })
 export class TimesheetsService {
@@ -52,6 +52,10 @@ export class TimesheetsService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  bulkSave(request: BulkSaveRequest): Observable<BulkSaveResponse> {
+    return this.http.post<BulkSaveResponse>(`${this.apiUrl}/bulk`, request);
   }
 
   private handleError(error: HttpErrorResponse): Observable<Timesheet[]> {

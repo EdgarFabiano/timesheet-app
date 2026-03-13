@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpParams } from '@angular/common/http';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,10 +16,21 @@ import { MatTableDataSource } from '@angular/material/table';
 import { TimesheetsService } from './timesheets.service';
 import { EmployeesService } from '../core/employees.service';
 import { ProjectsService } from '../core/projects.service';
-import { Timesheet, CreateTimesheetRequest, UpdateTimesheetRequest } from './timesheet.model';
+import { Timesheet, WeekDay, BulkSaveRequest } from './timesheet.model';
 import { Employee } from '../core/employee.model';
 import { Project } from '../core/project.model';
 import { AuthService } from '../core/auth.service';
+
+interface TimesheetRow {
+  project: Project;
+  days: { [key: string]: { hours: number; originalHours: number; notes: string | null; originalNotes: string | null } };
+}
+
+interface EditingNotes {
+  rowIndex: number;
+  dateStr: string;
+  projectId: string;
+}
 
 @Component({
   selector: 'app-timesheets',
@@ -50,32 +61,54 @@ export class TimesheetsComponent implements OnInit {
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
-  timesheets = signal<Timesheet[]>([]);
   employees = signal<Employee[]>([]);
   projects = signal<Project[]>([]);
   loading = signal(false);
   isAdmin = signal(false);
   
   selectedEmployeeId = signal<string | null>(null);
-  selectedProjectId = signal<string | null>(null);
   weekStart = signal<Date>(this.getWeekStart(new Date()));
   weekEnd = signal<Date>(this.getWeekEnd(new Date()));
 
-  displayedColumns = computed(() => {
-    const cols = ['date', 'projectName', 'hoursWorked', 'notes', 'actions'];
-    if (this.isAdmin()) {
-      cols.splice(1, 0, 'employeeName');
-    }
-    return cols;
-  });
-  dataSource = new MatTableDataSource<Timesheet>();
+  weekDays = signal<WeekDay[]>([]);
+  timesheetRows = signal<TimesheetRow[]>([]);
   
-  dialogOpen = signal(false);
-  editingTimesheet = signal<Timesheet | null>(null);
-  timesheetForm!: FormGroup;
-
+  notesDialogOpen = signal(false);
+  editingNotes = signal<EditingNotes | null>(null);
+  notesForm = this.fb.group({
+    notes: ['']
+  });
+  
+  form!: FormGroup;
+  
   currentUser = this.authService.getUser();
   private currentEmployeeId = signal<string | null>(null);
+
+  displayedColumns = computed(() => {
+    const cols = ['project'];
+    this.weekDays().forEach(day => cols.push(day.dateStr));
+    cols.push('total');
+    return cols;
+  });
+
+  weeklyTotal = computed(() => {
+    let total = 0;
+    this.weekDays().forEach(day => {
+      this.timesheetRows().forEach(row => {
+        total += row.days[day.dateStr]?.hours || 0;
+      });
+    });
+    return total;
+  });
+
+  hasChanges = computed(() => {
+    return this.timesheetRows().some(row => 
+      Object.values(row.days).some(day => 
+        day.hours !== day.originalHours || 
+        day.notes !== day.originalNotes
+      )
+    );
+  });
 
   ngOnInit(): void {
     this.isAdmin.set(this.authService.isAdmin());
@@ -84,12 +117,7 @@ export class TimesheetsComponent implements OnInit {
   }
 
   private initForm(): void {
-    this.timesheetForm = this.fb.group({
-      projectId: ['', Validators.required],
-      date: [new Date(), Validators.required],
-      hoursWorked: ['', [Validators.required, Validators.min(0.5), Validators.max(24)]],
-      notes: ['']
-    });
+    this.form = this.fb.group({});
   }
 
   private getWeekStart(date: Date): Date {
@@ -109,6 +137,22 @@ export class TimesheetsComponent implements OnInit {
     return end;
   }
 
+  private generateWeekDays(start: Date): WeekDay[] {
+    const days: WeekDay[] = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      days.push({
+        date: d,
+        dateStr: this.formatDateForApi(d),
+        dayName: dayNames[i],
+        dayNumber: d.getDate()
+      });
+    }
+    return days;
+  }
+
   private formatDateForApi(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -119,7 +163,9 @@ export class TimesheetsComponent implements OnInit {
   loadData(): void {
     this.loading.set(true);
     this.projectsService.getAll().subscribe({
-      next: (projects) => this.projects.set(projects.filter(p => p.isActive)),
+      next: (projects) => {
+        this.projects.set(projects.filter(p => p.isActive));
+      },
       error: () => {}
     });
 
@@ -134,6 +180,7 @@ export class TimesheetsComponent implements OnInit {
             this.selectedEmployeeId.set(currentEmp.id);
           }
         }
+        this.weekDays.set(this.generateWeekDays(this.weekStart()));
         this.loadTimesheets();
       },
       error: () => {
@@ -146,25 +193,22 @@ export class TimesheetsComponent implements OnInit {
     this.loading.set(true);
     
     const employeeId = this.selectedEmployeeId();
-    const projectId = this.selectedProjectId();
+    if (!employeeId) {
+      this.loading.set(false);
+      return;
+    }
+
     const startDate = this.formatDateForApi(this.weekStart());
     const endDate = this.formatDateForApi(this.weekEnd());
 
-    let params = new HttpParams()
+    const params = new HttpParams()
+      .set('employeeId', employeeId)
       .set('startDate', startDate)
       .set('endDate', endDate);
-    
-    if (employeeId) {
-      params = params.set('employeeId', employeeId);
-    }
-    if (projectId) {
-      params = params.set('projectId', projectId);
-    }
 
     this.timesheetsService.getWithFilters(params).subscribe({
       next: (data) => {
-        this.timesheets.set(data);
-        this.dataSource.data = data;
+        this.buildTimesheetRows(data);
         this.loading.set(false);
       },
       error: () => {
@@ -172,6 +216,32 @@ export class TimesheetsComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  private buildTimesheetRows(timesheets: Timesheet[]): void {
+    const rows: TimesheetRow[] = [];
+    const dayStrs = this.weekDays().map(d => d.dateStr);
+
+    this.projects().forEach(project => {
+      const row: TimesheetRow = {
+        project: project,
+        days: {}
+      };
+      
+      dayStrs.forEach(dateStr => {
+        const ts = timesheets.find(t => t.projectId === project.id && t.date === dateStr);
+        row.days[dateStr] = {
+          hours: ts?.hoursWorked || 0,
+          originalHours: ts?.hoursWorked || 0,
+          notes: ts?.notes || null,
+          originalNotes: ts?.notes || null
+        };
+      });
+      
+      rows.push(row);
+    });
+
+    this.timesheetRows.set(rows);
   }
 
   onWeekChange(direction: 'prev' | 'next'): void {
@@ -184,12 +254,14 @@ export class TimesheetsComponent implements OnInit {
     }
     this.weekStart.set(this.getWeekStart(newDate));
     this.weekEnd.set(this.getWeekEnd(newDate));
+    this.weekDays.set(this.generateWeekDays(this.weekStart()));
     this.loadTimesheets();
   }
 
   goToCurrentWeek(): void {
     this.weekStart.set(this.getWeekStart(new Date()));
     this.weekEnd.set(this.getWeekEnd(new Date()));
+    this.weekDays.set(this.generateWeekDays(this.weekStart()));
     this.loadTimesheets();
   }
 
@@ -197,99 +269,122 @@ export class TimesheetsComponent implements OnInit {
     this.loadTimesheets();
   }
 
-  canEditOrDelete(timesheet: Timesheet): boolean {
-    if (this.isAdmin()) return true;
-    return timesheet.employeeId === this.currentEmployeeId();
+  getRowTotal(row: TimesheetRow): number {
+    return Object.values(row.days).reduce((sum, d) => sum + d.hours, 0);
   }
 
-  openAddDialog(): void {
-    this.editingTimesheet.set(null);
-    this.timesheetForm.reset({ date: new Date(), notes: '' });
-    this.dialogOpen.set(true);
-    this.cdr.detectChanges();
+  isToday(dateStr: string): boolean {
+    const today = this.formatDateForApi(new Date());
+    return dateStr === today;
   }
 
-  openEditDialog(timesheet: Timesheet): void {
-    this.editingTimesheet.set(timesheet);
-    this.timesheetForm.patchValue({
-      projectId: timesheet.projectId,
-      date: new Date(timesheet.date),
-      hoursWorked: timesheet.hoursWorked,
-      notes: timesheet.notes || ''
+  updateHours(rowIndex: number, dateStr: string, value: number): void {
+    const rows = [...this.timesheetRows()];
+    if (!rows[rowIndex].days[dateStr]) {
+      rows[rowIndex].days[dateStr] = { hours: 0, originalHours: 0, notes: null, originalNotes: null };
+    }
+    rows[rowIndex].days[dateStr].hours = value;
+    this.timesheetRows.set(rows);
+  }
+
+  openNotesDialog(rowIndex: number, dateStr: string): void {
+    const row = this.timesheetRows()[rowIndex];
+    this.editingNotes.set({
+      rowIndex,
+      dateStr,
+      projectId: row.project.id
     });
-    this.dialogOpen.set(true);
-    this.cdr.detectChanges();
+    this.notesForm.patchValue({
+      notes: row.days[dateStr]?.notes || ''
+    });
+    this.notesDialogOpen.set(true);
   }
 
-  closeDialog(): void {
-    this.dialogOpen.set(false);
-    this.editingTimesheet.set(null);
+  closeNotesDialog(): void {
+    this.notesDialogOpen.set(false);
+    this.editingNotes.set(null);
+    this.notesForm.reset();
   }
 
-  saveTimesheet(): void {
-    if (this.timesheetForm.invalid) return;
+  saveNotes(): void {
+    const editing = this.editingNotes();
+    if (!editing) return;
 
-    const formValue = this.timesheetForm.value;
-    const editing = this.editingTimesheet();
-    const employeeId = this.isAdmin() 
-      ? (this.selectedEmployeeId() || this.currentEmployeeId())
-      : this.currentEmployeeId();
+    const rows = [...this.timesheetRows()];
+    const newNotes = this.notesForm.value.notes?.trim() || null;
 
+    if (!rows[editing.rowIndex].days[editing.dateStr]) {
+      rows[editing.rowIndex].days[editing.dateStr] = { hours: 0, originalHours: 0, notes: null, originalNotes: null };
+    }
+    rows[editing.rowIndex].days[editing.dateStr].notes = newNotes;
+    this.timesheetRows.set(rows);
+
+    this.closeNotesDialog();
+  }
+
+  hasNotes(rowIndex: number, dateStr: string): boolean {
+    const row = this.timesheetRows()[rowIndex];
+    return !!(row?.days[dateStr]?.notes);
+  }
+
+  getDayTotal(dateStr: string): number {
+    return this.timesheetRows().reduce((sum, row) => {
+      return sum + (row.days[dateStr]?.hours || 0);
+    }, 0);
+  }
+
+  save(): void {
+    const employeeId = this.selectedEmployeeId();
     if (!employeeId) {
       this.snackBar.open('Employee not found', 'Close', { duration: 3000 });
       return;
     }
 
-    if (editing) {
-      const request: UpdateTimesheetRequest = {
-        hoursWorked: formValue.hoursWorked,
-        notes: formValue.notes || null
-      };
-      this.timesheetsService.update(editing.id, request).subscribe({
-        next: () => {
-          this.snackBar.open('Timesheet updated successfully', 'Close', { duration: 3000 });
-          this.loadTimesheets();
-          this.closeDialog();
-        },
-        error: () => this.snackBar.open('Failed to update timesheet', 'Close', { duration: 3000 })
-      });
-    } else {
-      const request: CreateTimesheetRequest = {
-        employeeId: employeeId,
-        projectId: formValue.projectId,
-        date: this.formatDateForApi(new Date(formValue.date)),
-        hoursWorked: formValue.hoursWorked,
-        notes: formValue.notes || null
-      };
-      this.timesheetsService.create(request).subscribe({
-        next: () => {
-          this.snackBar.open('Timesheet created successfully', 'Close', { duration: 3000 });
-          this.loadTimesheets();
-          this.closeDialog();
-        },
-        error: () => this.snackBar.open('Failed to create timesheet', 'Close', { duration: 3000 })
-      });
-    }
-  }
+    const entries: { projectId: string; date: string; hoursWorked: number; notes: string | null }[] = [];
 
-  deleteTimesheet(timesheet: Timesheet): void {
-    if (!confirm('Are you sure you want to delete this timesheet entry?')) return;
-    
-    this.timesheetsService.delete(timesheet.id).subscribe({
-      next: () => {
-        this.snackBar.open('Timesheet deleted successfully', 'Close', { duration: 3000 });
+    this.timesheetRows().forEach(row => {
+      Object.entries(row.days).forEach(([dateStr, data]) => {
+        const hoursChanged = data.hours !== data.originalHours;
+        const notesChanged = data.notes !== data.originalNotes;
+        
+        if (data.hours > 0 && (hoursChanged || notesChanged)) {
+          entries.push({
+            projectId: row.project.id,
+            date: dateStr,
+            hoursWorked: data.hours,
+            notes: data.notes
+          });
+        }
+      });
+    });
+
+    if (entries.length === 0) {
+      this.snackBar.open('No changes to save', 'Close', { duration: 3000 });
+      return;
+    }
+
+    const request: BulkSaveRequest = {
+      employeeId: employeeId,
+      entries: entries
+    };
+
+    this.timesheetsService.bulkSave(request).subscribe({
+      next: (response) => {
+        if (response.errors.length > 0) {
+          this.snackBar.open(`Saved with errors: ${response.errors.join(', ')}`, 'Close', { duration: 5000 });
+        } else {
+          this.snackBar.open('Timesheets saved successfully', 'Close', { duration: 3000 });
+        }
         this.loadTimesheets();
       },
-      error: () => this.snackBar.open('Failed to delete timesheet', 'Close', { duration: 3000 })
+      error: () => {
+        this.snackBar.open('Failed to save timesheets', 'Close', { duration: 3000 });
+      }
     });
   }
 
   get weekRangeDisplay(): string {
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
     return `${this.weekStart().toLocaleDateString('en-US', options)} - ${this.weekEnd().toLocaleDateString('en-US', options)}`;
-  }
-
-  get totalHours(): number {
-    return this.timesheets().reduce((sum, t) => sum + t.hoursWorked, 0);
   }
 }

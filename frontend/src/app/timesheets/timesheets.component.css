@@ -11,6 +11,11 @@
   font-weight: 400;
 }
 
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .filter-card {
   margin-bottom: 16px;
 }
@@ -53,10 +58,6 @@
   display: inline-block;
 }
 
-.full-width-table {
-  width: 100%;
-}
-
 .loading-shade {
   display: flex;
   justify-content: center;
@@ -71,11 +72,138 @@
   color: #666;
 }
 
-.notes-cell {
-  max-width: 300px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.table-container {
+  overflow-x: auto;
+}
+
+.timesheet-grid {
+  width: 100%;
+  min-width: 800px;
+}
+
+.timesheet-grid th,
+.timesheet-grid td {
+  padding: 8px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.timesheet-grid .project-cell {
+  text-align: left;
+  min-width: 150px;
+  font-weight: 500;
+}
+
+.day-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.day-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.day-number {
+  font-size: 12px;
+  color: #666;
+}
+
+.hours-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.hours-input::-webkit-inner-spin-button,
+.hours-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.hours-input.invalid {
+  border-color: #f44336;
+  background: #ffebee;
+}
+
+.total-cell {
+  font-weight: 500;
+  background: #f5f5f5;
+}
+
+.total-row {
+  font-weight: 600;
+  background: #f5f5f5;
+}
+
+.grand-total {
+  font-weight: 700;
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.timesheet-grid mat-footer-row {
+  border-top: 2px solid #e0e0e0;
+}
+
+.today-header {
+  background: #e3f2fd !important;
+}
+
+.today-header .day-header.today {
+  color: #1976d2;
+}
+
+.today-cell {
+  background: #e3f2fd !important;
+}
+
+.today-input {
+  background: #fff;
+  border-color: #1976d2;
+  font-weight: 600;
+}
+
+.hours-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.hours-input {
+  width: 60px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.notes-btn {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0;
+}
+
+.notes-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #999;
+}
+
+.notes-btn.has-notes mat-icon {
+  color: #1976d2;
+}
+
+.notes-btn:hover {
+  background: rgba(25, 118, 210, 0.1);
 }
 
 .dialog-overlay {
@@ -104,15 +232,9 @@
   font-weight: 400;
 }
 
-.full-width {
+.dialog-content .full-width {
   width: 100%;
   margin-bottom: 8px;
-}
-
-.info-text {
-  color: #666;
-  margin-bottom: 16px;
-  font-size: 14px;
 }
 
 .dialog-actions {

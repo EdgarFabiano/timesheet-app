@@ -107,4 +107,16 @@ public class TimesheetsController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>Bulk save multiple timesheet entries for a week.</summary>
+    [HttpPost("bulk")]
+    public async Task<ActionResult<BulkSaveTimesheetResponse>> BulkSave([FromBody] BulkSaveTimesheetRequest request)
+    {
+        var result = await _timesheetService.BulkSaveAsync(request);
+
+        if (result.Errors.Any())
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

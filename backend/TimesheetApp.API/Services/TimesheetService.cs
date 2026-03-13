@@ -155,6 +155,79 @@ public class TimesheetService
         return true;
     }
 
+    public async Task<BulkSaveTimesheetResponse> BulkSaveAsync(BulkSaveTimesheetRequest request)
+    {
+        var errors = new List<string>();
+        var saved = new List<TimesheetResponse>();
+
+        var employeeExists = await _db.Employees.AnyAsync(e => e.Id == request.EmployeeId);
+        if (!employeeExists)
+        {
+            errors.Add("Employee not found.");
+            return new BulkSaveTimesheetResponse(saved, errors);
+        }
+
+        var existingEntries = await _db.Timesheets
+            .Where(t => t.EmployeeId == request.EmployeeId)
+            .ToListAsync();
+
+        var existingByKey = existingEntries.ToDictionary(
+            t => (t.ProjectId, t.Date),
+            t => t
+        );
+
+        foreach (var entry in request.Entries)
+        {
+            if (entry.HoursWorked <= 0)
+                continue;
+
+            var projectExists = await _db.Projects.AnyAsync(p => p.Id == entry.ProjectId);
+            if (!projectExists)
+            {
+                errors.Add($"Project {entry.ProjectId} not found.");
+                continue;
+            }
+
+            if (existingByKey.TryGetValue((entry.ProjectId, entry.Date), out var existing))
+            {
+                existing.HoursWorked = entry.HoursWorked;
+                existing.Notes = entry.Notes;
+            }
+            else
+            {
+                var newTimesheet = new Timesheet
+                {
+                    Id = Guid.NewGuid(),
+                    EmployeeId = request.EmployeeId,
+                    ProjectId = entry.ProjectId,
+                    Date = entry.Date,
+                    HoursWorked = entry.HoursWorked,
+                    Notes = entry.Notes,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _db.Timesheets.Add(newTimesheet);
+                existingByKey[(entry.ProjectId, entry.Date)] = newTimesheet;
+            }
+        }
+
+        await _db.SaveChangesAsync();
+
+        var validEntries = request.Entries.Where(e => e.HoursWorked > 0).ToList();
+        var minDate = validEntries.Min(e => e.Date);
+        var maxDate = validEntries.Max(e => e.Date);
+
+        var allTimesheets = await _db.Timesheets
+            .Include(t => t.Employee)
+            .Include(t => t.Project)
+            .Where(t => t.EmployeeId == request.EmployeeId)
+            .Where(t => t.Date >= minDate && t.Date <= maxDate)
+            .ToListAsync();
+
+        saved = allTimesheets.Select(MapToResponse).ToList();
+
+        return new BulkSaveTimesheetResponse(saved, errors);
+    }
+
     private static TimesheetResponse MapToResponse(Timesheet t)
     {
         return new TimesheetResponse(
