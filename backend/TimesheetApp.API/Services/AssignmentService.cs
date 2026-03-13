@@ -65,54 +65,46 @@ public class AssignmentService
 
     public async Task<IReadOnlyList<AssignmentResponse>> GetByProjectIdAsync(Guid projectId)
     {
-        return await _db.Assignments
+        var assignments = await _db.Assignments
             .AsNoTracking()
+            .Include(a => a.Employee)
+            .Include(a => a.Project)
             .Where(a => a.ProjectId == projectId)
-            .Select(a => new AssignmentResponse(
-                a.Id,
-                a.EmployeeId,
-                a.Employee.FullName,
-                a.ProjectId,
-                a.Project.Name,
-                a.AssignedAt,
-                a.IsActive))
-            .OrderBy(a => a.EmployeeName)
             .ToListAsync();
+
+        return assignments
+            .OrderBy(a => a.Employee.FullName)
+            .Select(a => MapToResponse(a))
+            .ToList();
     }
 
     public async Task<IReadOnlyList<AssignmentResponse>> GetByEmployeeIdAsync(Guid employeeId)
     {
-        return await _db.Assignments
+        var assignments = await _db.Assignments
             .AsNoTracking()
+            .Include(a => a.Employee)
+            .Include(a => a.Project)
             .Where(a => a.EmployeeId == employeeId)
-            .Select(a => new AssignmentResponse(
-                a.Id,
-                a.EmployeeId,
-                a.Employee.FullName,
-                a.ProjectId,
-                a.Project.Name,
-                a.AssignedAt,
-                a.IsActive))
-            .OrderBy(a => a.ProjectName)
             .ToListAsync();
+
+        return assignments
+            .OrderBy(a => a.Project.Name)
+            .Select(a => MapToResponse(a))
+            .ToList();
     }
 
     public async Task<IReadOnlyList<AssignmentResponse>> GetByProjectAndEmployeeAsync(
         Guid projectId,
         Guid employeeId)
     {
-        return await _db.Assignments
+        var assignments = await _db.Assignments
             .AsNoTracking()
+            .Include(a => a.Employee)
+            .Include(a => a.Project)
             .Where(a => a.ProjectId == projectId && a.EmployeeId == employeeId)
-            .Select(a => new AssignmentResponse(
-                a.Id,
-                a.EmployeeId,
-                a.Employee.FullName,
-                a.ProjectId,
-                a.Project.Name,
-                a.AssignedAt,
-                a.IsActive))
             .ToListAsync();
+
+        return assignments.Select(a => MapToResponse(a)).ToList();
     }
 
     public async Task<AssignmentResponse?> GetByIdAsync(Guid id)

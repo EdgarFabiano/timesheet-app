@@ -10,9 +10,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatListModule } from '@angular/material/list';
 import { EmployeesService } from '../core/employees.service';
+import { ProjectsService } from '../core/projects.service';
+import { Project } from '../core/project.model';
 import { Employee, CreateEmployeeRequest, UpdateEmployeeRequest } from '../core/employee.model';
 import { AuthService } from '../core/auth.service';
+
+interface Assignment {
+  id: string;
+  projectId: string;
+  projectName: string;
+  isActive: boolean;
+}
 
 @Component({
   selector: 'app-employees',
@@ -28,7 +38,8 @@ import { AuthService } from '../core/auth.service';
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatListModule
   ],
   templateUrl: './employees.component.html',
   styleUrls: ['./employees.component.css']
@@ -38,14 +49,20 @@ export class EmployeesComponent implements OnInit {
   loading = signal(false);
   isAdmin = signal(false);
   
-  displayedColumns: string[] = ['fullName', 'email', 'department', 'isActive', 'createdAt', 'actions'];
+  displayedColumns: string[] = ['fullName', 'email', 'department', 'isActive', 'assignmentsCount', 'createdAt', 'actions'];
   
   dialogOpen = signal(false);
   editingEmployee = signal<Employee | null>(null);
   employeeForm!: FormGroup;
 
+  projects = signal<Project[]>([]);
+  selectedProjectId = signal<string | null>(null);
+  assignments = signal<Assignment[]>([]);
+  assignmentsLoading = signal(false);
+
   constructor(
     private employeesService: EmployeesService,
+    private projectsService: ProjectsService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private authService: AuthService
@@ -96,12 +113,35 @@ export class EmployeesComponent implements OnInit {
       department: employee.department,
       isActive: employee.isActive
     });
+    this.loadProjects();
+    this.loadAssignments(employee.id);
     this.dialogOpen.set(true);
+  }
+
+  private loadProjects(): void {
+    this.projectsService.getAll().subscribe({
+      next: (data) => this.projects.set(data.filter(p => p.isActive))
+    });
+  }
+
+  private loadAssignments(employeeId: string): void {
+    this.assignmentsLoading.set(true);
+    this.employeesService.getAssignments(employeeId).subscribe({
+      next: (data) => {
+        this.assignments.set(data);
+        this.assignmentsLoading.set(false);
+      },
+      error: () => {
+        this.assignmentsLoading.set(false);
+        this.snackBar.open('Failed to load assignments', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   closeDialog(): void {
     this.dialogOpen.set(false);
     this.editingEmployee.set(null);
+    this.loadEmployees();
   }
 
   saveEmployee(): void {
@@ -154,6 +194,44 @@ export class EmployeesComponent implements OnInit {
         this.loadEmployees();
       },
       error: () => this.snackBar.open('Failed to delete employee', 'Close', { duration: 3000 })
+    });
+  }
+
+  assignProject(): void {
+    const projectId = this.selectedProjectId();
+    const employee = this.editingEmployee();
+    if (!projectId || !employee) return;
+
+    this.employeesService.assignProject(employee.id, projectId).subscribe({
+      next: () => {
+        this.snackBar.open('Project assigned successfully', 'Close', { duration: 3000 });
+        this.loadAssignments(employee.id);
+        this.loadEmployees();
+        this.selectedProjectId.set(null);
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          this.snackBar.open('Employee is already assigned to this project', 'Close', { duration: 3000 });
+        } else {
+          this.snackBar.open('Failed to assign project', 'Close', { duration: 3000 });
+        }
+      }
+    });
+  }
+
+  removeAssignment(assignment: Assignment): void {
+    if (!confirm(`Remove assignment to "${assignment.projectName}"?`)) return;
+
+    this.employeesService.removeAssignment(assignment.id).subscribe({
+      next: () => {
+        this.snackBar.open('Assignment removed successfully', 'Close', { duration: 3000 });
+        const employee = this.editingEmployee();
+        if (employee) {
+          this.loadAssignments(employee.id);
+          this.loadEmployees();
+        }
+      },
+      error: () => this.snackBar.open('Failed to remove assignment', 'Close', { duration: 3000 })
     });
   }
 }

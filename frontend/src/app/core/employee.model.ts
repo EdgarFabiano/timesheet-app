@@ -6,6 +6,7 @@ export interface Employee {
   department: string;
   isActive: boolean;
   createdAt: Date;
+  assignmentsCount: number;
 }
 
 export interface CreateEmployeeRequest {

@@ -26,7 +26,8 @@ public class EmployeeService
                 e.Email,
                 e.Department,
                 e.IsActive,
-                e.CreatedAt))
+                e.CreatedAt,
+                e.Assignments.Count(a => a.IsActive)))
             .ToListAsync();
     }
 
@@ -112,6 +113,7 @@ public class EmployeeService
             e.Email,
             e.Department,
             e.IsActive,
-            e.CreatedAt);
+            e.CreatedAt,
+            e.Assignments?.Count(a => a.IsActive) ?? 0);
     }
 }

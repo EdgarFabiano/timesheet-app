@@ -81,3 +81,53 @@
   gap: 8px;
   margin-top: 16px;
 }
+
+.assignments-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.assignments-section h3 {
+  margin: 0 0 12px;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.assign-project-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.assign-project-row mat-form-field {
+  flex: 1;
+}
+
+.assign-project-row button {
+  margin-top: 4px;
+}
+
+.no-assignments {
+  color: #666;
+  font-style: italic;
+}
+
+.assignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assignment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.project-name {
+  flex: 1;
+}

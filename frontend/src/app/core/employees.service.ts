@@ -3,6 +3,16 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { Employee, CreateEmployeeRequest, UpdateEmployeeRequest } from './employee.model';
 
+interface AssignmentResponse {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  projectId: string;
+  projectName: string;
+  assignedAt: Date;
+  isActive: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class EmployeesService {
   private readonly apiUrl = '/api/employees';
@@ -33,6 +43,24 @@ export class EmployeesService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  getAssignments(employeeId: string): Observable<AssignmentResponse[]> {
+    return this.http.get<AssignmentResponse[]>(`/api/assignments?employeeId=${employeeId}`).pipe(
+      catchError(this.handleErrorAssignments)
+    );
+  }
+
+  assignProject(employeeId: string, projectId: string): Observable<AssignmentResponse> {
+    return this.http.post<AssignmentResponse>('/api/assignments', {
+      employeeId,
+      projectId,
+      isActive: true
+    });
+  }
+
+  removeAssignment(assignmentId: string): Observable<void> {
+    return this.http.delete<void>(`/api/assignments/${assignmentId}`);
+  }
+
   private handleError(error: HttpErrorResponse): Observable<Employee[]> {
     console.error('Employees API error:', error);
     return of([]);
@@ -41,5 +69,10 @@ export class EmployeesService {
   private handleErrorById(error: HttpErrorResponse): Observable<Employee | null> {
     console.error('Employees API error:', error);
     return of(null);
+  }
+
+  private handleErrorAssignments(error: HttpErrorResponse): Observable<AssignmentResponse[]> {
+    console.error('Assignments API error:', error);
+    return of([]);
   }
 }

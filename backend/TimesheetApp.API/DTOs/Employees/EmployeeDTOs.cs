@@ -25,5 +25,6 @@ public record EmployeeResponse(
     string Email,
     string Department,
     bool IsActive,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    int AssignmentsCount
 );

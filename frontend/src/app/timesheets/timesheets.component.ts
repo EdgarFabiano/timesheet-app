@@ -171,28 +171,48 @@ export class TimesheetsComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
+    
     this.projectsService.getAll().subscribe({
-      next: (projects) => {
-        this.projects.set(projects.filter(p => p.isActive));
+      next: (allProjects) => {
+        this.employeesService.getAll().subscribe({
+          next: (employees) => {
+            this.employees.set(employees.filter(e => e.isActive));
+            
+            if (!this.isAdmin() && this.currentUser) {
+              const currentEmp = employees.find(e => e.email === this.currentUser?.email);
+              if (currentEmp) {
+                this.currentEmployeeId.set(currentEmp.id);
+                this.selectedEmployeeId.set(currentEmp.id);
+                this.loadEmployeeProjects(currentEmp.id, allProjects);
+              } else {
+                this.projects.set([]);
+              }
+            } else {
+              this.projects.set(allProjects.filter(p => p.isActive));
+              this.weekDays.set(this.generateWeekDays(this.weekStart()));
+              this.loadTimesheets();
+            }
+          },
+          error: () => {
+            this.loading.set(false);
+          }
+        });
       },
       error: () => {}
     });
+  }
 
-    this.employeesService.getAll().subscribe({
-      next: (employees) => {
-        this.employees.set(employees.filter(e => e.isActive));
-        
-        if (!this.isAdmin() && this.currentUser) {
-          const currentEmp = employees.find(e => e.email === this.currentUser?.email);
-          if (currentEmp) {
-            this.currentEmployeeId.set(currentEmp.id);
-            this.selectedEmployeeId.set(currentEmp.id);
-          }
-        }
+  private loadEmployeeProjects(employeeId: string, allProjects: Project[]): void {
+    this.employeesService.getAssignments(employeeId).subscribe({
+      next: (assignments) => {
+        const assignedProjectIds = assignments.filter(a => a.isActive).map(a => a.projectId);
+        const filteredProjects = allProjects.filter(p => p.isActive && assignedProjectIds.includes(p.id));
+        this.projects.set(filteredProjects);
         this.weekDays.set(this.generateWeekDays(this.weekStart()));
         this.loadTimesheets();
       },
       error: () => {
+        this.projects.set([]);
         this.loading.set(false);
       }
     });
