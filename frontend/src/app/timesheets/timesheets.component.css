@@ -43,7 +43,7 @@
 }
 
 .week-label:hover {
-  background: #f0f0f0;
+  background: var(--mat-sys-surface-container-highest);
 }
 
 .filter-field {
@@ -53,7 +53,7 @@
 .total-hours {
   margin-top: 16px;
   padding: 8px 16px;
-  background: #f5f5f5;
+  background: var(--mat-sys-surface-container-highest);
   border-radius: 4px;
   display: inline-block;
 }
@@ -63,13 +63,13 @@
   justify-content: center;
   align-items: center;
   padding: 40px;
-  color: #666;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .no-data {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .table-container {
@@ -108,13 +108,13 @@
 
 .day-number {
   font-size: 12px;
-  color: #666;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .hours-input:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+  border-color: var(--mat-sys-primary);
+  box-shadow: 0 0 0 2px var(--mat-sys-primary);
 }
 
 .hours-input::-webkit-inner-spin-button,
@@ -123,45 +123,46 @@
 }
 
 .hours-input.invalid {
-  border-color: #f44336;
-  background: #ffebee;
+  border-color: var(--mat-sys-error);
+  background: var(--mat-sys-error-container);
 }
 
 .total-cell {
   font-weight: 500;
-  background: #f5f5f5;
+  background: var(--mat-sys-surface-container-highest);
 }
 
 .total-row {
   font-weight: 600;
-  background: #f5f5f5;
+  background: var(--mat-sys-surface-container-highest);
 }
 
 .grand-total {
   font-weight: 700;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-primary);
 }
 
 .timesheet-grid mat-footer-row {
-  border-top: 2px solid #e0e0e0;
+  border-top: 2px solid var(--mat-sys-outline-variant);
 }
 
 .today-header {
-  background: #e3f2fd !important;
+  background: var(--mat-sys-secondary-container) !important;
 }
 
 .today-header .day-header.today {
-  color: #1976d2;
+  color: var(--mat-sys-secondary-container);
 }
 
 .today-cell {
-  background: #e3f2fd !important;
+  background: var(--mat-sys-secondary-container) !important;
 }
 
 .today-input {
-  background: #fff;
-  border-color: #1976d2;
+  background: var(--mat-sys-surface);
+  border-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-surface);
   font-weight: 600;
 }
 
@@ -175,13 +176,15 @@
 .hours-input {
   width: 60px;
   padding: 4px 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--mat-sys-outline);
   border-radius: 4px;
   text-align: center;
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
   height: 28px;
   box-sizing: border-box;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
 }
 
 .notes-btn {
@@ -195,15 +198,15 @@
   font-size: 16px;
   width: 16px;
   height: 16px;
-  color: #999;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .notes-btn.has-notes mat-icon {
-  color: #1976d2;
+  color: var(--mat-sys-primary);
 }
 
 .notes-btn:hover {
-  background: rgba(25, 118, 210, 0.1);
+  background: var(--mat-sys-secondary-container);
 }
 
 .dialog-overlay {
@@ -212,7 +215,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--mat-sys-scrim);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -220,7 +223,7 @@
 }
 
 .dialog-content {
-  background: white;
+  background: var(--mat-sys-surface-container);
   padding: 24px;
   border-radius: 8px;
   width: 400px;

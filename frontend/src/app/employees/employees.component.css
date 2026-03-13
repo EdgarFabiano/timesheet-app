@@ -20,22 +20,22 @@
   justify-content: center;
   align-items: center;
   padding: 40px;
-  color: #666;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .no-data {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .active-status {
-  color: #2e7d32;
+  color: var(--mat-sys-tertiary);
   font-weight: 500;
 }
 
 .inactive-status {
-  color: #d32f2f;
+  color: var(--mat-sys-error);
   font-weight: 500;
 }
 
@@ -45,7 +45,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--mat-sys-scrim);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -53,7 +53,7 @@
 }
 
 .dialog-content {
-  background: white;
+  background: var(--mat-sys-surface-container);
   padding: 24px;
   border-radius: 8px;
   width: 400px;
@@ -85,7 +85,7 @@
 .assignments-section {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--mat-sys-outline-variant);
 }
 
 .assignments-section h3 {
@@ -109,7 +109,7 @@
 }
 
 .no-assignments {
-  color: #666;
+  color: var(--mat-sys-on-surface-variant);
   font-style: italic;
 }
 
@@ -124,7 +124,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: #f5f5f5;
+  background: var(--mat-sys-surface-container-highest);
   border-radius: 4px;
 }
 

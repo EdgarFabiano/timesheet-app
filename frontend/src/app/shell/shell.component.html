@@ -39,9 +39,34 @@
       <span>Timesheet App</span>
       <span class="spacer"></span>
       @if (currentUser()) {
-        <span class="user-info">{{ currentUser()?.email }} ({{ currentUser()?.role }})</span>
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-trigger">
+          <span>{{ currentUser()?.email }}</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu" class="user-dropdown">
+          <button mat-menu-item>
+            <mat-slide-toggle 
+              [checked]="isDarkMode()" 
+              (change)="toggleTheme()"
+              (click)="$event.stopPropagation()">
+              Dark Mode
+            </mat-slide-toggle>
+          </button>
+          <button mat-menu-item disabled>
+            <mat-icon>email</mat-icon>
+            <span>{{ currentUser()?.email }}</span>
+          </button>
+          <button mat-menu-item disabled>
+            <mat-icon>badge</mat-icon>
+            <span>{{ currentUser()?.role }}</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
       }
-      <button mat-button (click)="logout()">Logout</button>
     </mat-toolbar>
     <div class="content">
       <router-outlet></router-outlet>
