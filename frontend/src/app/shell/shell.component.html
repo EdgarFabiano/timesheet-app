@@ -4,6 +4,10 @@
       <h3>Timesheet App</h3>
     </div>
     <mat-nav-list>
+      <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
       @if (isAdmin()) {
         <a mat-list-item routerLink="/clients" routerLinkActive="active">
           <mat-icon matListItemIcon>business</mat-icon>
@@ -18,10 +22,12 @@
           <span matListItemTitle>Employees</span>
         </a>
       }
-      <a mat-list-item routerLink="/timesheets" routerLinkActive="active">
-        <mat-icon matListItemIcon>schedule</mat-icon>
-        <span matListItemTitle>Timesheets</span>
-      </a>
+      @if (!isAdmin()) {
+        <a mat-list-item routerLink="/timesheets" routerLinkActive="active">
+          <mat-icon matListItemIcon>schedule</mat-icon>
+          <span matListItemTitle>Timesheets</span>
+        </a>
+      }
     </mat-nav-list>
   </mat-sidenav>
 

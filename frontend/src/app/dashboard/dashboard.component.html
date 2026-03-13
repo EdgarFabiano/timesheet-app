@@ -1,0 +1,231 @@
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <div class="header-actions">
+    <button mat-raised-button color="primary" routerLink="/timesheets">
+      <mat-icon>add</mat-icon>
+      Log Hours
+    </button>
+  </div>
+</div>
+
+<mat-card class="filter-card">
+  <mat-card-content>
+    <div class="filters">
+      <div class="date-presets">
+        <button mat-button (click)="setDateRange('week')">This Week</button>
+        <button mat-button (click)="setDateRange('month')">This Month</button>
+        <button mat-button (click)="setDateRange('year')">This Year</button>
+      </div>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" [value]="startDate()" (dateChange)="onStartDateChange($event)">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" [value]="endDate()" (dateChange)="onEndDateChange($event)">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+
+      @if (isAdmin()) {
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Employee</mat-label>
+          <mat-select [value]="selectedEmployeeId()" (selectionChange)="selectedEmployeeId.set($event.value); onFilterChange()">
+            <mat-option [value]="null">All Employees</mat-option>
+            @for (emp of employees(); track emp.id) {
+              <mat-option [value]="emp.id">{{ emp.fullName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Project</mat-label>
+          <mat-select [value]="selectedProjectId()" (selectionChange)="selectedProjectId.set($event.value); onFilterChange()">
+            <mat-option [value]="null">All Projects</mat-option>
+            @for (proj of projects(); track proj.id) {
+              <mat-option [value]="proj.id">{{ proj.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      @if (isAdmin()) {
+        <button mat-stroked-button (click)="exportToCsv()">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<div class="summary-cards">
+  <mat-card class="summary-card">
+    <mat-card-content>
+      <div class="summary-icon">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <div class="summary-value">{{ weeklyTotal() }}h</div>
+      <div class="summary-label">Total Hours</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="summary-card">
+    <mat-card-content>
+      <div class="summary-icon">
+        <mat-icon>calendar_today</mat-icon>
+      </div>
+      <div class="summary-value">{{ dailyTotals().length }}</div>
+      <div class="summary-label">Days Worked</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="summary-card">
+    <mat-card-content>
+      <div class="summary-icon">
+        <mat-icon>folder</mat-icon>
+      </div>
+      <div class="summary-value">{{ projectTotals().length }}</div>
+      <div class="summary-label">Projects</div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isAdmin()) {
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="summary-icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="summary-value">{{ employeeTotals().length }}</div>
+        <div class="summary-label">Employees</div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
+
+<mat-tab-group animationDuration="200ms">
+  <mat-tab label="Overview">
+    <div class="charts-grid">
+      <mat-card class="chart-card">
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas baseChart
+              [data]="barChartData()"
+              [options]="barChartOptions"
+              type="bar">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas baseChart
+              [data]="pieChartData()"
+              [options]="pieChartOptions"
+              type="pie">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </mat-tab>
+
+  @if (isAdmin()) {
+    <mat-tab label="Employees">
+      <mat-card class="chart-card full-width">
+        <mat-card-content>
+          <div class="chart-container horizontal-chart">
+            <canvas baseChart
+              [data]="employeeChartData()"
+              [options]="employeeChartOptions"
+              type="bar">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  }
+
+  <mat-tab label="Details">
+    <mat-card>
+      <mat-card-content>
+        @if (loading()) {
+          <div class="loading-shade">Loading...</div>
+        }
+
+        <table mat-table [dataSource]="dataSource()" class="entries-table">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.date }}</td>
+          </ng-container>
+
+          @if (isAdmin()) {
+            <ng-container matColumnDef="employee">
+              <th mat-header-cell *matHeaderCellDef>Employee</th>
+              <td mat-cell *matCellDef="let row">{{ row.employeeName }}</td>
+            </ng-container>
+          }
+
+          <ng-container matColumnDef="project">
+            <th mat-header-cell *matHeaderCellDef>Project</th>
+            <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="hours">
+            <th mat-header-cell *matHeaderCellDef>Hours</th>
+            <td mat-cell *matCellDef="let row">{{ row.hoursWorked }}h</td>
+          </ng-container>
+
+          <ng-container matColumnDef="notes">
+            <th mat-header-cell *matHeaderCellDef>Notes</th>
+            <td mat-cell *matCellDef="let row" class="notes-cell">{{ row.notes || '-' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
+        </table>
+
+        @if (filteredTimesheets().length === 0 && !loading()) {
+          <p class="no-data">No timesheet entries found for the selected filters.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+
+  <mat-tab label="Projects">
+    <mat-card>
+      <mat-card-content>
+        <table mat-table [dataSource]="projectTotals()" class="project-table">
+          <ng-container matColumnDef="projectName">
+            <th mat-header-cell *matHeaderCellDef>Project</th>
+            <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="totalHours">
+            <th mat-header-cell *matHeaderCellDef>Total Hours</th>
+            <td mat-cell *matCellDef="let row">{{ row.totalHours }}h</td>
+          </ng-container>
+
+          <ng-container matColumnDef="percentage">
+            <th mat-header-cell *matHeaderCellDef>Percentage</th>
+            <td mat-cell *matCellDef="let row">
+              <div class="percentage-bar">
+                <div class="percentage-fill" [style.width.%]="row.percentage"></div>
+                <span class="percentage-text">{{ row.percentage }}%</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['projectName', 'totalHours', 'percentage']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['projectName', 'totalHours', 'percentage'];"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

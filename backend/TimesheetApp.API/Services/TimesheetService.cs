@@ -128,6 +128,58 @@ public class TimesheetService
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<TimesheetResponse>> GetAllAsync()
+    {
+        return await _db.Timesheets
+            .AsNoTracking()
+            .OrderByDescending(t => t.Date)
+            .ThenBy(t => t.Employee.FullName)
+            .Select(t => new TimesheetResponse(
+                t.Id,
+                t.EmployeeId,
+                t.Employee.FullName,
+                t.ProjectId,
+                t.Project.Name,
+                t.Date,
+                t.HoursWorked,
+                t.Notes,
+                t.CreatedAt))
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<TimesheetResponse>> GetWithFiltersAsync(
+        Guid? employeeId = null,
+        Guid? projectId = null,
+        DateOnly? startDate = null,
+        DateOnly? endDate = null)
+    {
+        var query = _db.Timesheets.AsNoTracking();
+
+        if (employeeId.HasValue)
+            query = query.Where(t => t.EmployeeId == employeeId.Value);
+        if (projectId.HasValue)
+            query = query.Where(t => t.ProjectId == projectId.Value);
+        if (startDate.HasValue)
+            query = query.Where(t => t.Date >= startDate.Value);
+        if (endDate.HasValue)
+            query = query.Where(t => t.Date <= endDate.Value);
+
+        return await query
+            .OrderByDescending(t => t.Date)
+            .ThenBy(t => t.Employee.FullName)
+            .Select(t => new TimesheetResponse(
+                t.Id,
+                t.EmployeeId,
+                t.Employee.FullName,
+                t.ProjectId,
+                t.Project.Name,
+                t.Date,
+                t.HoursWorked,
+                t.Notes,
+                t.CreatedAt))
+            .ToListAsync();
+    }
+
     public async Task<TimesheetResponse?> GetByIdAsync(Guid id)
     {
         var timesheet = await _db.Timesheets

@@ -17,7 +17,7 @@ public class TimesheetsController : ControllerBase
         _timesheetService = timesheetService;
     }
 
-    /// <summary>Get timesheets. Filter by employeeId and/or projectId with optional startDate/endDate.</summary>
+    /// <summary>Get timesheets. Filter by employeeId, projectId, and/or date range.</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TimesheetResponse>>> GetAll(
         [FromQuery] Guid? employeeId,
@@ -25,39 +25,11 @@ public class TimesheetsController : ControllerBase
         [FromQuery] DateOnly? startDate,
         [FromQuery] DateOnly? endDate)
     {
-        if (employeeId.HasValue && startDate.HasValue && endDate.HasValue)
-        {
-            if (startDate.Value > endDate.Value)
-                return BadRequest("startDate must be before or equal to endDate.");
+        if (startDate.HasValue && endDate.HasValue && startDate.Value > endDate.Value)
+            return BadRequest("startDate must be before or equal to endDate.");
 
-            var timesheets = await _timesheetService.GetByEmployeeAndDateRangeAsync(
-                employeeId.Value,
-                startDate.Value,
-                endDate.Value);
-
-            if (projectId.HasValue)
-            {
-                timesheets = timesheets.Where(t => t.ProjectId == projectId.Value).ToList();
-            }
-
-            return Ok(timesheets);
-        }
-
-        if (projectId.HasValue)
-        {
-            var timesheets = await _timesheetService.GetByProjectIdAsync(
-                projectId.Value,
-                startDate,
-                endDate);
-            return Ok(timesheets);
-        }
-
-        if (employeeId.HasValue)
-        {
-            return BadRequest("When filtering by employeeId, both startDate and endDate are required.");
-        }
-
-        return BadRequest("Provide employeeId with startDate/endDate, or projectId to list timesheets.");
+        var timesheets = await _timesheetService.GetWithFiltersAsync(employeeId, projectId, startDate, endDate);
+        return Ok(timesheets);
     }
 
     [HttpGet("{id:guid}")]
