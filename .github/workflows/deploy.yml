@@ -2,7 +2,7 @@ name: Deploy Backend to Azure
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,10 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker build \
+            -f ./backend/TimesheetApp.API/Dockerfile \
+            -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            ./backend/TimesheetApp.API
 
       - name: Push image
         run: |
