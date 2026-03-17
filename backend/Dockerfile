@@ -8,8 +8,8 @@ WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore TimesheetApp.API/TimesheetApp.API.csproj
-RUN dotnet publish TimesheetApp.API/TimesheetApp.API.csproj -c Release -o /app/publish
+RUN dotnet restore ./TimesheetApp.API/TimesheetApp.API.csproj
+RUN dotnet publish ./TimesheetApp.API/TimesheetApp.API.csproj -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
