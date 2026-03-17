@@ -32,16 +32,19 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} -f backend/TimesheetApp.API/Dockerfile backend/TimesheetApp.API
+          docker build \
+            -f ./backend/TimesheetApp.API/Dockerfile \
+            -t ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            ./backend/TimesheetApp.API
 
       - name: Push image
         run: |
-          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Update App Service container
         run: |
           az webapp config container set \
             --name ${{ secrets.AZURE_WEBAPP_NAME }} \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --container-image-name ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            --container-registry-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+            --container-image-name ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --container-registry-url https://${{ secrets.AZURE_ACR_LOGIN_SERVER }}
