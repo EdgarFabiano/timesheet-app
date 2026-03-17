@@ -7,7 +7,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY . .
-RUN dotnet restore TimesheetApp.slnx
+
+RUN dotnet restore TimesheetApp.API/TimesheetApp.API.csproj
 RUN dotnet publish TimesheetApp.API/TimesheetApp.API.csproj -c Release -o /app/publish
 
 FROM base AS final
