@@ -32,7 +32,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} -f backend/TimesheetApp.API/Dockerfile backend/TimesheetApp.API
 
       - name: Push image
         run: |
