@@ -6,62 +6,60 @@ This document provides guidelines for AI agents and developers working on this c
 
 ```
 timesheet-app/
-├── frontend/                 # Angular 21 SPA
-│   ├── src/
-│   │   └── app/
-│   │       ├── core/        # Services, guards, interceptors
-│   │       ├── login/       # Login page
-│   │       ├── shell/       # App shell with sidebar
-│   │       ├── clients/     # Clients module
-│   │       ├── projects/    # Projects module
-│   │       ├── employees/   # Employees module
-│   │       └── timesheets/  # Timesheets module
-│   ├── proxy.conf.json      # API proxy config
-│   └── angular.json
+├── frontend/                 # Angular 21 SPA (Vitest, SCSS)
+│   ├── src/app/
+│   │   ├── core/            # Services, guards, interceptors
+│   │   ├── login/           # Login page
+│   │   ├── shell/           # App shell with sidebar
+│   │   ├── clients/          # Clients module
+│   │   ├── projects/         # Projects module
+│   │   ├── employees/        # Employees module
+│   │   └── timesheets/       # Timesheets module
+│   ├── proxy.conf.json       # API proxy config
+│   ├── angular.json
+│   └── tsconfig.json         # Strict TypeScript config
 │
-├── backend/                  # ASP.NET Core Web API
-│   ├── TimesheetApp.API/    # Main API project
-│   │   ├── Controllers/     # API endpoints
-│   │   ├── Services/        # Business logic
-│   │   ├── DTOs/            # Data transfer objects
-│   │   ├── Models/          # Entity models
-│   │   ├── Data/            # DbContext
-│   │   └── Migrations/      # EF Core migrations
-│   └── TimesheetApp.Tests/  # Unit & integration tests
+├── backend/                  # ASP.NET Core 10 Web API
+│   ├── TimesheetApp.slnx     # Solution file
+│   ├── TimesheetApp.API/     # Main API project
+│   │   ├── Controllers/      # API endpoints
+│   │   ├── Services/         # Business logic
+│   │   ├── DTOs/             # Request/Response objects
+│   │   ├── Models/           # Entity models
+│   │   ├── Data/             # DbContext
+│   │   └── Migrations/        # EF Core migrations
+│   └── TimesheetApp.Tests/   # xUnit tests
 ```
 
 ---
 
 ## Build, Lint, and Test Commands
 
-### Frontend (Angular)
+### Frontend (Angular 21 + Vitest)
 
 ```bash
-# Navigate to frontend directory
 cd frontend
 
 # Install dependencies
 npm install
 
-# Start development server (http://localhost:4200)
+# Development server (http://localhost:4200)
 npm start
-# or: ng serve
-
-# Start with specific port
-ng serve --port 4201
 
 # Build for production
 npm run build
 
 # Run unit tests
 npm test
-# or: ng test
 
-# Run tests in watch mode
-ng test --watch
+# Watch mode
+npm test -- --watch
 
-# Run a single test file
-ng test --include='**/login.component.spec.ts'
+# Single test file
+npm test -- --include='**/login.component.spec.ts'
+
+# Run tests with coverage
+npm test -- --coverage
 
 # Format code with Prettier
 npx prettier --write src/
@@ -70,32 +68,28 @@ npx prettier --write src/
 npx prettier --check src/
 ```
 
-### Backend (.NET)
+### Backend (.NET 10)
 
 ```bash
-# Navigate to backend directory
 cd backend
 
-# Restore dependencies
-dotnet restore
-
 # Build the solution
-dotnet build
+dotnet build TimesheetApp.slnx
 
 # Run API (http://localhost:5282)
 dotnet run --project TimesheetApp.API
 
-# Run tests
+# Run all tests
 dotnet test
 
-# Run a specific test class
+# Run tests with coverage
+dotnet test --collect:"XPlat Code Coverage"
+
+# Run specific test class
 dotnet test --filter "FullyQualifiedName~TimesheetServiceTests"
 
-# Run a specific test method
+# Run specific test method
 dotnet test --filter "FullyQualifiedName~TimesheetServiceTests.CreateAsync"
-
-# Run with code coverage
-dotnet test --collect:"XPlat Code Coverage"
 
 # Apply code style fixes
 dotnet format
@@ -103,9 +97,9 @@ dotnet format
 
 ### Running Both Services
 
-1. Start backend: `dotnet run --project backend/TimesheetApp.API` (port 5282)
-2. Start frontend: `npm start` (port 4200)
-3. Frontend proxies `/api/*` requests to backend via `proxy.conf.json`
+1. Start backend: `dotnet run --project backend/TimesheetApp.API`
+2. Start frontend: `npm start` in frontend directory
+3. Frontend proxies `/api/*` to backend via `proxy.conf.json`
 
 ---
 
@@ -113,41 +107,48 @@ dotnet format
 
 ### General Principles
 
-- **DRY (Don't Repeat Yourself)**: Extract common logic into shared services/utilities
-- **KISS (Keep It Simple)**: Prefer simple solutions over complex ones
-- **Single Responsibility**: Each component/service should have a clear purpose
-- **Type Safety**: Avoid `any` unless absolutely necessary; use proper types
+- **DRY**: Extract common logic into shared services/utilities
+- **KISS**: Prefer simple solutions over complex ones
+- **Single Responsibility**: Each component/service has a clear purpose
+- **Type Safety**: Avoid `any`; use strict TypeScript (`strict: true` enabled)
+
+---
 
 ### Angular (Frontend)
+
+#### TypeScript Configuration
+Project uses strict mode with these settings (tsconfig.json):
+- `strict: true`
+- `noImplicitOverride: true`
+- `noPropertyAccessFromIndexSignature: true`
+- `noImplicitReturns: true`
+- `strictTemplates: true`
 
 #### Naming Conventions
 
 | Element | Convention | Example |
 |---------|------------|---------|
-| Component | kebab-case | `login.component.ts` |
+| Component file | kebab-case | `login.component.ts` |
 | Component class | PascalCase | `LoginComponent` |
 | Service | kebab-case + .service | `auth.service.ts` |
 | Guard | kebab-case + .guard | `auth.guard.ts` |
 | Interface | PascalCase | `Client`, `User` |
 | Template | same as component | `login.component.html` |
-| Styles | same as component | `login.component.css` |
+| Styles | SCSS, same as component | `login.component.scss` |
 
-#### Imports
+#### Import Order
 
 ```typescript
-// Group imports in this order:
-1. Angular core/modules (Component, Injectable, etc.)
-2. Angular common modules (CommonModule, RouterModule, etc.)
-3. Third-party libraries (Angular Material, RxJS)
-4. Custom services/models
-5. Relative imports from same feature
-
-// Good:
-import { Component, signal } from '@angular/core';
+// 1. Angular core (Component, signal, etc.)
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+// 2. Angular common (CommonModule, RouterModule, etc.)
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+// 3. Third-party (Angular Material, RxJS operators)
 import { MatCardModule } from '@angular/material/card';
-import { Observable, map } from 'rxjs';
+import { MatTableModule } from '@angular/material/table';
+import { Observable, map, catchError, of } from 'rxjs';
+// 4. Custom services/models
 import { AuthService } from '../../core/auth.service';
 import { Client } from '../../core/client.model';
 ```
@@ -155,25 +156,23 @@ import { Client } from '../../core/client.model';
 #### Components
 
 - Use standalone components (Angular 15+)
-- Use signals for reactive state management
+- Use **signals** for reactive state management
+- Use **OnPush** change detection for performance
 - Separate template, styles, and logic into different files
-- Use `OnPush` change detection for performance
 
 ```typescript
 @Component({
   selector: 'app-clients',
   standalone: true,
-  imports: [CommonModule, MatTableModule, ...],
+  imports: [CommonModule, MatTableModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './clients.component.html',
-  styleUrls: ['./clients.component.css']
+  styleUrls: ['./clients.component.scss']
 })
 export class ClientsComponent {
-  // Use signals for state
   clients = signal<Client[]>([]);
   loading = signal(false);
 
-  // Use dependency injection
   constructor(private clientService: ClientsService) {}
 }
 ```
@@ -181,11 +180,10 @@ export class ClientsComponent {
 #### Templates
 
 - Use Angular's new control flow syntax (`@if`, `@for`, `@switch`)
-- Avoid complex logic in templates; move to component
-- Use semantic HTML and ARIA attributes for accessibility
+- Avoid complex logic in templates; use computed signals
+- Use semantic HTML with ARIA attributes
 
 ```html
-<!-- Good -->
 @if (loading()) {
   <mat-spinner></mat-spinner>
 } @else {
@@ -193,24 +191,29 @@ export class ClientsComponent {
     ...
   </table>
 }
+
+@for (client of clients(); track client.id) {
+  <tr mat-row></tr>
+}
 ```
 
 #### HTTP & Services
 
 - Use HttpClient with typed responses
-- Always handle errors with proper error messages
-- Use interceptors for auth tokens, logging, etc.
+- Always handle errors with catchError and return safe defaults
 
 ```typescript
 getClients(): Observable<Client[]> {
   return this.http.get<Client[]>('/api/clients').pipe(
     catchError(err => {
       console.error('Failed to load clients', err);
-      return of([]); // Return empty array on error
+      return of([]);
     })
   );
 }
 ```
+
+---
 
 ### ASP.NET Core (Backend)
 
@@ -221,24 +224,24 @@ getClients(): Observable<Client[]> {
 | Controller | PascalCase + Controller | `ClientsController` |
 | Service | PascalCase + Service | `ClientService` |
 | Model | PascalCase | `Client`, `User` |
-| DTO | PascalCase + Request/Response | `CreateClientRequest`, `ClientResponse` |
+| DTO | PascalCase + Request/Response | `CreateClientRequest` |
 | Record | PascalCase | `CreateClientRequest` |
 
 #### Project Structure
 
 ```
-Controllers/     # API endpoints, minimal logic
-Services/       # Business logic, validation
-DTOs/           # Request/Response objects
-Models/         # Entity definitions
-Data/           # DbContext, migrations
+Controllers/   # API endpoints, minimal logic
+Services/      # Business logic, validation
+DTOs/          # Request/Response records
+Models/        # Entity definitions
+Data/          # DbContext, migrations
 ```
 
 #### Error Handling
 
-- Use proper HTTP status codes (200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error)
+- Use proper HTTP status codes (200, 201, 400, 401, 404, 500)
 - Return meaningful error messages
-- Use try-catch with proper logging
+- Use try-catch with logging
 
 ```csharp
 [HttpPost]
@@ -261,13 +264,13 @@ public async Task<ActionResult<ClientResponse>> Create([FromBody] CreateClientRe
 
 - Use Entity Framework Core with async methods
 - Use DTOs for API requests/responses, not entity models directly
-- Implement proper validation
+- Implement validation with data annotations or FluentValidation
 
-#### Testing
+#### Testing (xUnit + Moq + Testcontainers)
 
-- Unit tests: Test individual services in isolation
-- Integration tests: Test API endpoints with real HTTP calls
-- Use the existing test helpers (`TestDbContextFactory`, `JwtTokenHelper`)
+- Unit tests: Test services in isolation with Moq
+- Integration tests: Test API with Testcontainers.PostgreSql
+- Use `TestDbContextFactory`, `JwtTokenHelper` test helpers
 
 ---
 
@@ -299,7 +302,7 @@ public async Task<ActionResult<ClientResponse>> Create([FromBody] CreateClientRe
 - `DELETE /api/employees/{id}` - Delete (Admin)
 
 ### Timesheets
-- `GET /api/timesheets?employeeId=&startDate=&endDate=` - Filter by employee + date range
+- `GET /api/timesheets?employeeId=&startDate=&endDate=` - Filter by employee
 - `GET /api/timesheets?projectId=&startDate=&endDate=` - Filter by project
 - `POST /api/timesheets` - Create entry
 - `PUT /api/timesheets/{id}` - Update entry
@@ -313,15 +316,15 @@ public async Task<ActionResult<ClientResponse>> Create([FromBody] CreateClientRe
 | Admin | Full CRUD on all entities, view all timesheets, manage users |
 | Employee | View projects, log/edit own timesheets |
 
-- Use `AuthService.isAdmin()` to check permissions in Angular
-- Backend uses `[Authorize(Roles = "Admin")]` attribute
+- Angular: Use `AuthService.isAdmin()` to check permissions
+- Backend: Use `[Authorize(Roles = "Admin")]` attribute
 
 ---
 
-## Additional Notes
+## Technical Notes
 
-- Backend runs on port 5282 (configured in `launchSettings.json`)
-- Frontend proxies API calls via `proxy.conf.json`
-- Use Angular Material for UI components
-- JWT tokens are stored in localStorage (`auth_token`)
-- Employee records are linked to User accounts via `EmployeeId`
+- Backend: .NET 10, PostgreSQL via EF Core, JWT auth, port 5282
+- Frontend: Angular 21, Vitest for tests, SCSS styles, Angular Material
+- JWT tokens stored in localStorage (`auth_token`)
+- Employee records linked to User accounts via `EmployeeId`
+- Frontend proxies `/api/*` to backend via `proxy.conf.json`
