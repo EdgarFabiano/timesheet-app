@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { Employee, CreateEmployeeRequest, UpdateEmployeeRequest } from './employee.model';
+import { environment } from '../../environments/environment';
 
 interface AssignmentResponse {
   id: string;
@@ -15,7 +16,7 @@ interface AssignmentResponse {
 
 @Injectable({ providedIn: 'root' })
 export class EmployeesService {
-  private readonly apiUrl = '/api/employees';
+  private readonly apiUrl = `${environment.apiUrl}/employees`;
 
   constructor(private http: HttpClient) {}
 
@@ -44,13 +45,13 @@ export class EmployeesService {
   }
 
   getAssignments(employeeId: string): Observable<AssignmentResponse[]> {
-    return this.http.get<AssignmentResponse[]>(`/api/assignments?employeeId=${employeeId}`).pipe(
+    return this.http.get<AssignmentResponse[]>(`${environment.apiUrl}/assignments?employeeId=${employeeId}`).pipe(
       catchError(this.handleErrorAssignments)
     );
   }
 
   assignProject(employeeId: string, projectId: string): Observable<AssignmentResponse> {
-    return this.http.post<AssignmentResponse>('/api/assignments', {
+    return this.http.post<AssignmentResponse>(`${environment.apiUrl}/assignments`, {
       employeeId,
       projectId,
       isActive: true
@@ -58,7 +59,7 @@ export class EmployeesService {
   }
 
   removeAssignment(assignmentId: string): Observable<void> {
-    return this.http.delete<void>(`/api/assignments/${assignmentId}`);
+    return this.http.delete<void>(`${environment.apiUrl}/assignments/${assignmentId}`);
   }
 
   private handleError(error: HttpErrorResponse): Observable<Employee[]> {

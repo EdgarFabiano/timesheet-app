@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   email: string;
@@ -25,7 +26,7 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/auth/login', { email, password }).pipe(
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, { email, password }).pipe(
       tap(res => {
         if (res?.token) {
           localStorage.setItem(this.TOKEN_KEY, res.token);
@@ -37,7 +38,7 @@ export class AuthService {
   }
 
   register(email: string, password: string, fullName: string, department: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/auth/register', { email, password, fullName, department });
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, { email, password, fullName, department });
   }
 
   getToken(): string | null {

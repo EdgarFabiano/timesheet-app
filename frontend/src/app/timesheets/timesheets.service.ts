@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { Timesheet, CreateTimesheetRequest, UpdateTimesheetRequest, BulkSaveRequest, BulkSaveResponse } from '../timesheets/timesheet.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TimesheetsService {
-  private readonly apiUrl = '/api/timesheets';
+  private readonly apiUrl = `${environment.apiUrl}/timesheets`;
 
   constructor(private http: HttpClient) {}
 
