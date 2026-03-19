@@ -16,6 +16,7 @@ import { ProjectsService } from '../core/projects.service';
 import { Project } from '../core/project.model';
 import { Employee, CreateEmployeeRequest, UpdateEmployeeRequest } from '../core/employee.model';
 import { AuthService } from '../core/auth.service';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 interface Assignment {
   id: string;
@@ -39,7 +40,8 @@ interface Assignment {
     MatSelectModule,
     MatSnackBarModule,
     MatSlideToggleModule,
-    MatListModule
+    MatListModule,
+    SkeletonComponent
   ],
   templateUrl: './employees.component.html',
   styleUrls: ['./employees.component.css']

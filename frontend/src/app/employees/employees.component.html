@@ -1,4 +1,4 @@
-<div class="page-header">
+<div class="page-header fade-in">
   <h1>Employees</h1>
   @if (isAdmin()) {
     <button mat-raised-button color="primary" (click)="openAddDialog()">
@@ -8,64 +8,64 @@
   }
 </div>
 
-<mat-card>
+<mat-card class="fade-in-up stagger-1">
   <mat-card-content>
     @if (loading()) {
-      <div class="loading-shade">Loading...</div>
+      <app-skeleton type="table" [count]="6"></app-skeleton>
+    } @else {
+      <table mat-table [dataSource]="employees()" class="full-width-table">
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.fullName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef>Department</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.department }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="isActive">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let employee">
+            <span [class.active-status]="employee.isActive" [class.inactive-status]="!employee.isActive">
+              {{ employee.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="assignmentsCount">
+          <th mat-header-cell *matHeaderCellDef>Assignments</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.assignmentsCount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Created</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.createdAt | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let employee">
+            @if (isAdmin()) {
+              <button mat-icon-button color="primary" (click)="openEditDialog(employee)" title="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteEmployee(employee)" title="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row-animate"></tr>
+      </table>
     }
-
-    <table mat-table [dataSource]="employees()" class="full-width-table">
-      <ng-container matColumnDef="fullName">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.fullName }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.email }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="department">
-        <th mat-header-cell *matHeaderCellDef>Department</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.department }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="isActive">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let employee">
-          <span [class.active-status]="employee.isActive" [class.inactive-status]="!employee.isActive">
-            {{ employee.isActive ? 'Active' : 'Inactive' }}
-          </span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="assignmentsCount">
-        <th mat-header-cell *matHeaderCellDef>Assignments</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.assignmentsCount }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="createdAt">
-        <th mat-header-cell *matHeaderCellDef>Created</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.createdAt | date:'mediumDate' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let employee">
-          @if (isAdmin()) {
-            <button mat-icon-button color="primary" (click)="openEditDialog(employee)" title="Edit">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteEmployee(employee)" title="Delete">
-              <mat-icon>delete</mat-icon>
-            </button>
-          }
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
 
     @if (employees().length === 0 && !loading()) {
       <p class="no-data">No employees found.</p>
@@ -75,7 +75,7 @@
 
 @if (dialogOpen()) {
   <div class="dialog-overlay" (click)="closeDialog()">
-    <div class="dialog-content" (click)="$event.stopPropagation()">
+    <div class="dialog-content scale-in" (click)="$event.stopPropagation()">
       <h2>{{ editingEmployee() ? 'Edit Employee' : 'Add Employee' }}</h2>
       <form [formGroup]="employeeForm" (ngSubmit)="saveEmployee()">
         <mat-form-field appearance="outline" class="full-width">

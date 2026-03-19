@@ -1,4 +1,4 @@
-<div class="page-header">
+<div class="page-header fade-in">
   <h1>Timesheets</h1>
   <div class="header-actions">
     @if (hasChanges()) {
@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<mat-card class="filter-card">
+<mat-card class="filter-card fade-in-up stagger-1">
   <mat-card-content>
     <div class="filters">
       <div class="week-navigation">
@@ -55,79 +55,81 @@
   </mat-card-content>
 </mat-card>
 
-<mat-card>
+<mat-card class="fade-in-up stagger-2">
   <mat-card-content>
     @if (loading()) {
-      <div class="loading-shade">Loading...</div>
-    }
-
-    <div class="table-container">
-      <table mat-table [dataSource]="filteredTimesheetRows()" class="timesheet-grid">
-        <ng-container matColumnDef="project">
-          <th mat-header-cell *matHeaderCellDef>Project</th>
-          <td mat-cell *matCellDef="let row" class="project-cell">
-            {{ row.project.name }}
-          </td>
-          <td mat-footer-cell *matFooterCellDef class="total-row">
-            <strong>Daily Total</strong>
-          </td>
-        </ng-container>
-
-        @for (day of weekDays(); track day.dateStr) {
-          <ng-container [matColumnDef]="day.dateStr">
-            <th mat-header-cell *matHeaderCellDef [class.today-header]="isToday(day.dateStr)">
-              <div class="day-header" [class.today]="isToday(day.dateStr)">
-                <span class="day-name">{{ day.dayName }}</span>
-                <span class="day-number">{{ day.dayNumber }}</span>
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let row; let rowIndex = index" [class.today-cell]="isToday(day.dateStr)">
-              <div class="hours-cell">
-                <input 
-                  type="number" 
-                  class="hours-input"
-                  [class.today-input]="isToday(day.dateStr)"
-                  [value]="row.days[day.dateStr]?.hours || 0"
-                  (change)="updateHours(rowIndex, day.dateStr, $any($event.target).valueAsNumber)"
-                  (input)="updateHours(rowIndex, day.dateStr, $any($event.target).valueAsNumber)"
-                  min="0"
-                  max="24"
-                  step="0.5"
-                />
-                @if ((row.days[day.dateStr]?.hours || 0) > 0 || hasNotes(rowIndex, day.dateStr)) {
-                  <button 
-                    mat-icon-button 
-                    class="notes-btn"
-                    [class.has-notes]="hasNotes(rowIndex, day.dateStr)"
-                    (click)="openNotesDialog(rowIndex, day.dateStr)"
-                    title="Edit notes"
-                  >
-                    <mat-icon>{{ hasNotes(rowIndex, day.dateStr) ? 'sticky_note_2' : 'note_add' }}</mat-icon>
-                  </button>
-                }
-              </div>
+      <div class="skeleton-grid">
+        <div class="skeleton skeleton-row" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table mat-table [dataSource]="filteredTimesheetRows()" class="timesheet-grid">
+          <ng-container matColumnDef="project">
+            <th mat-header-cell *matHeaderCellDef>Project</th>
+            <td mat-cell *matCellDef="let row" class="project-cell">
+              {{ row.project.name }}
             </td>
-            <td mat-footer-cell *matFooterCellDef class="total-cell" [class.today-cell]="isToday(day.dateStr)">
-              {{ getDayTotal(day.dateStr) }}h
+            <td mat-footer-cell *matFooterCellDef class="total-row">
+              <strong>Daily Total</strong>
             </td>
           </ng-container>
-        }
 
-        <ng-container matColumnDef="total">
-          <th mat-header-cell *matHeaderCellDef>Total</th>
-          <td mat-cell *matCellDef="let row" class="total-cell">
-            <strong>{{ getRowTotal(row) }}h</strong>
-          </td>
-          <td mat-footer-cell *matFooterCellDef class="grand-total">
-            <strong>{{ weeklyTotal() }}h</strong>
-          </td>
-        </ng-container>
+          @for (day of weekDays(); track day.dateStr) {
+            <ng-container [matColumnDef]="day.dateStr">
+              <th mat-header-cell *matHeaderCellDef [class.today-header]="isToday(day.dateStr)">
+                <div class="day-header" [class.today]="isToday(day.dateStr)">
+                  <span class="day-name">{{ day.dayName }}</span>
+                  <span class="day-number">{{ day.dayNumber }}</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let row; let rowIndex = index" [class.today-cell]="isToday(day.dateStr)">
+                <div class="hours-cell">
+                  <input 
+                    type="number" 
+                    class="hours-input"
+                    [class.today-input]="isToday(day.dateStr)"
+                    [value]="row.days[day.dateStr]?.hours || 0"
+                    (change)="updateHours(rowIndex, day.dateStr, $any($event.target).valueAsNumber)"
+                    (input)="updateHours(rowIndex, day.dateStr, $any($event.target).valueAsNumber)"
+                    min="0"
+                    max="24"
+                    step="0.5"
+                  />
+                  @if ((row.days[day.dateStr]?.hours || 0) > 0 || hasNotes(rowIndex, day.dateStr)) {
+                    <button 
+                      mat-icon-button 
+                      class="notes-btn"
+                      [class.has-notes]="hasNotes(rowIndex, day.dateStr)"
+                      (click)="openNotesDialog(rowIndex, day.dateStr)"
+                      title="Edit notes"
+                    >
+                      <mat-icon>{{ hasNotes(rowIndex, day.dateStr) ? 'sticky_note_2' : 'note_add' }}</mat-icon>
+                    </button>
+                  }
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="total-cell" [class.today-cell]="isToday(day.dateStr)">
+                {{ getDayTotal(day.dateStr) }}h
+              </td>
+            </ng-container>
+          }
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
-        <tr mat-footer-row *matFooterRowDef="displayedColumns()"></tr>
-      </table>
-    </div>
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let row" class="total-cell">
+              <strong>{{ getRowTotal(row) }}h</strong>
+            </td>
+            <td mat-footer-cell *matFooterCellDef class="grand-total">
+              <strong>{{ weeklyTotal() }}h</strong>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns();" class="table-row-animate"></tr>
+          <tr mat-footer-row *matFooterRowDef="displayedColumns()"></tr>
+        </table>
+      </div>
+    }
 
     @if (filteredTimesheetRows().length === 0 && !loading()) {
       <p class="no-data">No projects available for timesheet entry.</p>
@@ -135,19 +137,21 @@
   </mat-card-content>
 </mat-card>
 
-<div class="dialog-overlay" *ngIf="notesDialogOpen()" (click)="closeNotesDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Edit Notes</h2>
-    <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Notes</mat-label>
-        <textarea matInput formControlName="notes" placeholder="Add notes for this entry..." rows="4"></textarea>
-      </mat-form-field>
+@if (notesDialogOpen()) {
+  <div class="dialog-overlay" (click)="closeNotesDialog()">
+    <div class="dialog-content scale-in" (click)="$event.stopPropagation()">
+      <h2>Edit Notes</h2>
+      <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notes</mat-label>
+          <textarea matInput formControlName="notes" placeholder="Add notes for this entry..." rows="4"></textarea>
+        </mat-form-field>
 
-      <div class="dialog-actions">
-        <button mat-button type="button" (click)="closeNotesDialog()">Cancel</button>
-        <button mat-raised-button color="primary" type="submit">Save</button>
-      </div>
-    </form>
+        <div class="dialog-actions">
+          <button mat-button type="button" (click)="closeNotesDialog()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
+}

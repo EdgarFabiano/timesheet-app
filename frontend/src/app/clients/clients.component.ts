@@ -14,6 +14,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ClientsService } from '../core/clients.service';
 import { Client, CreateClientRequest, UpdateClientRequest } from '../core/client.model';
 import { AuthService } from '../core/auth.service';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 @Component({
   selector: 'app-clients',
@@ -30,7 +31,8 @@ import { AuthService } from '../core/auth.service';
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    SkeletonComponent
   ],
   templateUrl: './clients.component.html',
   styleUrls: ['./clients.component.css']

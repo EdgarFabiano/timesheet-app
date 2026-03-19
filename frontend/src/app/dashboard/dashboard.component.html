@@ -1,4 +1,4 @@
-<div class="page-header">
+<div class="page-header fade-in">
   <h1>Dashboard</h1>
   <div class="header-actions">
     <button mat-raised-button color="primary" routerLink="/timesheets">
@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<mat-card class="filter-card">
+<mat-card class="filter-card fade-in stagger-1">
   <mat-card-content>
     <div class="filters">
       <div class="date-presets">
@@ -63,169 +63,203 @@
   </mat-card-content>
 </mat-card>
 
-<div class="summary-cards">
-  <mat-card class="summary-card">
-    <mat-card-content>
-      <div class="summary-icon">
-        <mat-icon>schedule</mat-icon>
-      </div>
-      <div class="summary-value">{{ weeklyTotal() }}h</div>
-      <div class="summary-label">Total Hours</div>
-    </mat-card-content>
-  </mat-card>
-
-  <mat-card class="summary-card">
-    <mat-card-content>
-      <div class="summary-icon">
-        <mat-icon>calendar_today</mat-icon>
-      </div>
-      <div class="summary-value">{{ dailyTotals().length }}</div>
-      <div class="summary-label">Days Worked</div>
-    </mat-card-content>
-  </mat-card>
-
-  <mat-card class="summary-card">
-    <mat-card-content>
-      <div class="summary-icon">
-        <mat-icon>folder</mat-icon>
-      </div>
-      <div class="summary-value">{{ projectTotals().length }}</div>
-      <div class="summary-label">Projects</div>
-    </mat-card-content>
-  </mat-card>
-
-  @if (isAdmin()) {
-    <mat-card class="summary-card">
-      <mat-card-content>
-        <div class="summary-icon">
-          <mat-icon>people</mat-icon>
-        </div>
-        <div class="summary-value">{{ employeeTotals().length }}</div>
-        <div class="summary-label">Employees</div>
-      </mat-card-content>
-    </mat-card>
-  }
-</div>
-
-<mat-tab-group animationDuration="200ms">
-  <mat-tab label="Overview">
-    <div class="charts-grid">
-      <mat-card class="chart-card">
+@if (loading()) {
+  <div class="summary-cards">
+    @for (i of [1,2,3,4]; track i) {
+      <mat-card class="summary-card fade-in-up" [class]="'stagger-' + i">
         <mat-card-content>
-          <div class="chart-container">
-            <canvas baseChart
-              [data]="barChartData()"
-              [options]="barChartOptions"
-              type="bar">
-            </canvas>
-          </div>
+          <div class="skeleton skeleton-icon"></div>
+          <div class="skeleton skeleton-value"></div>
+          <div class="skeleton skeleton-label"></div>
         </mat-card-content>
       </mat-card>
+    }
+  </div>
 
-      <mat-card class="chart-card">
+  <mat-tab-group animationDuration="200ms">
+    <mat-tab label="Overview">
+      <div class="charts-grid">
+        <mat-card class="chart-card fade-in-up stagger-1">
+          <mat-card-content>
+            <app-skeleton type="chart"></app-skeleton>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="chart-card fade-in-up stagger-2">
+          <mat-card-content>
+            <app-skeleton type="chart"></app-skeleton>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+    <mat-tab label="Details">
+      <mat-card class="fade-in-up stagger-3">
         <mat-card-content>
-          <div class="chart-container">
-            <canvas baseChart
-              [data]="pieChartData()"
-              [options]="pieChartOptions"
-              type="pie">
-            </canvas>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </mat-tab>
-
-  @if (isAdmin()) {
-    <mat-tab label="Employees">
-      <mat-card class="chart-card full-width">
-        <mat-card-content>
-          <div class="chart-container horizontal-chart">
-            <canvas baseChart
-              [data]="employeeChartData()"
-              [options]="employeeChartOptions"
-              type="bar">
-            </canvas>
-          </div>
+          <app-skeleton type="table" [count]="5"></app-skeleton>
         </mat-card-content>
       </mat-card>
     </mat-tab>
-  }
-
-  <mat-tab label="Details">
-    <mat-card>
+  </mat-tab-group>
+} @else {
+  <div class="summary-cards">
+    <mat-card class="summary-card fade-in-up stagger-1">
       <mat-card-content>
-        @if (loading()) {
-          <div class="loading-shade">Loading...</div>
-        }
+        <div class="summary-icon">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div class="summary-value">{{ weeklyTotal() }}h</div>
+        <div class="summary-label">Total Hours</div>
+      </mat-card-content>
+    </mat-card>
 
-        <table mat-table [dataSource]="dataSource()" class="entries-table">
-          <ng-container matColumnDef="date">
-            <th mat-header-cell *matHeaderCellDef>Date</th>
-            <td mat-cell *matCellDef="let row">{{ row.date }}</td>
-          </ng-container>
+    <mat-card class="summary-card fade-in-up stagger-2">
+      <mat-card-content>
+        <div class="summary-icon">
+          <mat-icon>calendar_today</mat-icon>
+        </div>
+        <div class="summary-value">{{ dailyTotals().length }}</div>
+        <div class="summary-label">Days Worked</div>
+      </mat-card-content>
+    </mat-card>
 
-          @if (isAdmin()) {
-            <ng-container matColumnDef="employee">
-              <th mat-header-cell *matHeaderCellDef>Employee</th>
-              <td mat-cell *matCellDef="let row">{{ row.employeeName }}</td>
+    <mat-card class="summary-card fade-in-up stagger-3">
+      <mat-card-content>
+        <div class="summary-icon">
+          <mat-icon>folder</mat-icon>
+        </div>
+        <div class="summary-value">{{ projectTotals().length }}</div>
+        <div class="summary-label">Projects</div>
+      </mat-card-content>
+    </mat-card>
+
+    @if (isAdmin()) {
+      <mat-card class="summary-card fade-in-up stagger-4">
+        <mat-card-content>
+          <div class="summary-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="summary-value">{{ employeeTotals().length }}</div>
+          <div class="summary-label">Employees</div>
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+
+  <mat-tab-group animationDuration="200ms" class="fade-in-up stagger-5">
+    <mat-tab label="Overview">
+      <div class="charts-grid">
+        <mat-card class="chart-card fade-in-up stagger-1">
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas baseChart
+                [data]="barChartData()"
+                [options]="barChartOptions"
+                type="bar">
+              </canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="chart-card fade-in-up stagger-2">
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas baseChart
+                [data]="pieChartData()"
+                [options]="pieChartOptions"
+                type="pie">
+              </canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    @if (isAdmin()) {
+      <mat-tab label="Employees">
+        <mat-card class="chart-card full-width fade-in-up stagger-1">
+          <mat-card-content>
+            <div class="chart-container horizontal-chart">
+              <canvas baseChart
+                [data]="employeeChartData()"
+                [options]="employeeChartOptions"
+                type="bar">
+              </canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+    }
+
+    <mat-tab label="Details">
+      <mat-card class="fade-in-up stagger-3">
+        <mat-card-content>
+          <table mat-table [dataSource]="dataSource()" class="entries-table">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Date</th>
+              <td mat-cell *matCellDef="let row">{{ row.date }}</td>
             </ng-container>
+
+            @if (isAdmin()) {
+              <ng-container matColumnDef="employee">
+                <th mat-header-cell *matHeaderCellDef>Employee</th>
+                <td mat-cell *matCellDef="let row">{{ row.employeeName }}</td>
+              </ng-container>
+            }
+
+            <ng-container matColumnDef="project">
+              <th mat-header-cell *matHeaderCellDef>Project</th>
+              <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="hours">
+              <th mat-header-cell *matHeaderCellDef>Hours</th>
+              <td mat-cell *matCellDef="let row">{{ row.hoursWorked }}h</td>
+            </ng-container>
+
+            <ng-container matColumnDef="notes">
+              <th mat-header-cell *matHeaderCellDef>Notes</th>
+              <td mat-cell *matCellDef="let row" class="notes-cell">{{ row.notes || '-' }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
+          </table>
+
+          @if (filteredTimesheets().length === 0 && !loading()) {
+            <p class="no-data">No timesheet entries found for the selected filters.</p>
           }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
 
-          <ng-container matColumnDef="project">
-            <th mat-header-cell *matHeaderCellDef>Project</th>
-            <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
-          </ng-container>
+    <mat-tab label="Projects">
+      <mat-card class="fade-in-up stagger-4">
+        <mat-card-content>
+          <table mat-table [dataSource]="projectTotals()" class="project-table">
+            <ng-container matColumnDef="projectName">
+              <th mat-header-cell *matHeaderCellDef>Project</th>
+              <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
+            </ng-container>
 
-          <ng-container matColumnDef="hours">
-            <th mat-header-cell *matHeaderCellDef>Hours</th>
-            <td mat-cell *matCellDef="let row">{{ row.hoursWorked }}h</td>
-          </ng-container>
+            <ng-container matColumnDef="totalHours">
+              <th mat-header-cell *matHeaderCellDef>Total Hours</th>
+              <td mat-cell *matCellDef="let row">{{ row.totalHours }}h</td>
+            </ng-container>
 
-          <ng-container matColumnDef="notes">
-            <th mat-header-cell *matHeaderCellDef>Notes</th>
-            <td mat-cell *matCellDef="let row" class="notes-cell">{{ row.notes || '-' }}</td>
-          </ng-container>
+            <ng-container matColumnDef="percentage">
+              <th mat-header-cell *matHeaderCellDef>Percentage</th>
+              <td mat-cell *matCellDef="let row">
+                <div class="percentage-bar">
+                  <div class="percentage-fill" [style.width.%]="row.percentage"></div>
+                  <span class="percentage-text">{{ row.percentage }}%</span>
+                </div>
+              </td>
+            </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
-        </table>
-
-        @if (filteredTimesheets().length === 0 && !loading()) {
-          <p class="no-data">No timesheet entries found for the selected filters.</p>
-        }
-      </mat-card-content>
-    </mat-card>
-  </mat-tab>
-
-  <mat-tab label="Projects">
-    <mat-card>
-      <mat-card-content>
-        <table mat-table [dataSource]="projectTotals()" class="project-table">
-          <ng-container matColumnDef="projectName">
-            <th mat-header-cell *matHeaderCellDef>Project</th>
-            <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="totalHours">
-            <th mat-header-cell *matHeaderCellDef>Total Hours</th>
-            <td mat-cell *matCellDef="let row">{{ row.totalHours }}h</td>
-          </ng-container>
-
-          <ng-container matColumnDef="percentage">
-            <th mat-header-cell *matHeaderCellDef>Percentage</th>
-            <td mat-cell *matCellDef="let row">
-              <div class="percentage-bar">
-                <div class="percentage-fill" [style.width.%]="row.percentage"></div>
-                <span class="percentage-text">{{ row.percentage }}%</span>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="['projectName', 'totalHours', 'percentage']"></tr>
-          <tr mat-row *matRowDef="let row; columns: ['projectName', 'totalHours', 'percentage'];"></tr>
-        </table>
-      </mat-card-content>
-    </mat-card>
-  </mat-tab>
-</mat-tab-group>
+            <tr mat-header-row *matHeaderRowDef="['projectName', 'totalHours', 'percentage']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['projectName', 'totalHours', 'percentage'];"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+}

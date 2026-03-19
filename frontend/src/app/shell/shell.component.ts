@@ -54,4 +54,8 @@ export class ShellComponent {
   logout() {
     this.auth.logout();
   }
+
+  isNavItemActive(path: string): boolean {
+    return window.location.pathname === path;
+  }
 }

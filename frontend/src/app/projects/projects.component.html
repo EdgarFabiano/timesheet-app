@@ -1,4 +1,4 @@
-<div class="page-header">
+<div class="page-header fade-in">
   <h1>Projects</h1>
   @if (isAdmin()) {
     <button mat-raised-button color="primary" (click)="openAddDialog()">
@@ -8,59 +8,59 @@
   }
 </div>
 
-<mat-card>
+<mat-card class="fade-in-up stagger-1">
   <mat-card-content>
     @if (loading()) {
-      <div class="loading-shade">Loading...</div>
+      <app-skeleton type="table" [count]="6"></app-skeleton>
+    } @else {
+      <table mat-table [dataSource]="projects()" class="full-width-table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let project">{{ project.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="clientName">
+          <th mat-header-cell *matHeaderCellDef>Client</th>
+          <td mat-cell *matCellDef="let project">{{ project.clientName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="startDate">
+          <th mat-header-cell *matHeaderCellDef>Start Date</th>
+          <td mat-cell *matCellDef="let project">{{ project.startDate | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="endDate">
+          <th mat-header-cell *matHeaderCellDef>End Date</th>
+          <td mat-cell *matCellDef="let project">{{ project.endDate ? (project.endDate | date:'mediumDate') : 'Ongoing' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="isActive">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let project">
+            <span [class.active-status]="project.isActive" [class.inactive-status]="!project.isActive">
+              {{ project.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let project">
+            @if (isAdmin()) {
+              <button mat-icon-button color="primary" (click)="openEditDialog(project)" title="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteProject(project)" title="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row-animate"></tr>
+      </table>
     }
-
-    <table mat-table [dataSource]="projects()" class="full-width-table">
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let project">{{ project.name }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="clientName">
-        <th mat-header-cell *matHeaderCellDef>Client</th>
-        <td mat-cell *matCellDef="let project">{{ project.clientName }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="startDate">
-        <th mat-header-cell *matHeaderCellDef>Start Date</th>
-        <td mat-cell *matCellDef="let project">{{ project.startDate | date:'mediumDate' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="endDate">
-        <th mat-header-cell *matHeaderCellDef>End Date</th>
-        <td mat-cell *matCellDef="let project">{{ project.endDate ? (project.endDate | date:'mediumDate') : 'Ongoing' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="isActive">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let project">
-          <span [class.active-status]="project.isActive" [class.inactive-status]="!project.isActive">
-            {{ project.isActive ? 'Active' : 'Inactive' }}
-          </span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let project">
-          @if (isAdmin()) {
-            <button mat-icon-button color="primary" (click)="openEditDialog(project)" title="Edit">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteProject(project)" title="Delete">
-              <mat-icon>delete</mat-icon>
-            </button>
-          }
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
 
     @if (projects().length === 0 && !loading()) {
       <p class="no-data">No projects found.</p>
@@ -70,7 +70,7 @@
 
 @if (dialogOpen()) {
   <div class="dialog-overlay" (click)="closeDialog()">
-    <div class="dialog-content" (click)="$event.stopPropagation()">
+    <div class="dialog-content scale-in" (click)="$event.stopPropagation()">
       <h2>{{ editingProject() ? 'Edit Project' : 'Add Project' }}</h2>
       <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
         <mat-form-field appearance="outline" class="full-width">

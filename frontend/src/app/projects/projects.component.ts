@@ -17,6 +17,7 @@ import { ClientsService } from '../core/clients.service';
 import { Project, CreateProjectRequest, UpdateProjectRequest } from '../core/project.model';
 import { Client } from '../core/client.model';
 import { AuthService } from '../core/auth.service';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 @Component({
   selector: 'app-projects',
@@ -34,7 +35,8 @@ import { AuthService } from '../core/auth.service';
     MatSnackBarModule,
     MatSlideToggleModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    SkeletonComponent
   ],
   templateUrl: './projects.component.html',
   styleUrls: ['./projects.component.css']

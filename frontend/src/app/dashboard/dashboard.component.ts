@@ -22,6 +22,7 @@ import { Timesheet } from '../timesheets/timesheet.model';
 import { Employee } from '../core/employee.model';
 import { Project } from '../core/project.model';
 import { AuthService } from '../core/auth.service';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 interface DailyTotal {
   date: string;
@@ -58,7 +59,8 @@ interface EmployeeTotal {
     MatNativeDateModule,
     MatInputModule,
     MatTabsModule,
-    BaseChartDirective
+    BaseChartDirective,
+    SkeletonComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',

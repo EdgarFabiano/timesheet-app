@@ -1,5 +1,5 @@
 <div class="login-container">
-  <mat-card class="login-card">
+  <mat-card class="login-card fade-in-up">
     <mat-card-header>
       <mat-card-title>Timesheet App</mat-card-title>
       <mat-card-subtitle>Sign in to continue</mat-card-subtitle>
@@ -28,7 +28,7 @@
           }
         </mat-form-field>
         @if (error()) {
-          <div class="error-message">{{ error() }}</div>
+          <div class="error-message slide-in-right">{{ error() }}</div>
         }
         <button mat-raised-button color="primary" type="submit" class="full-width login-btn" [disabled]="loading()">
           {{ loading() ? 'Signing in...' : 'Sign In' }}
