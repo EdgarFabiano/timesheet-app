@@ -1,4 +1,4 @@
-import { Component, ViewChild, signal } from '@angular/core';
+import { Component, ViewChild, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
@@ -38,12 +38,23 @@ export class ShellComponent {
   isAdmin = signal(false);
   currentUser = signal<{ email: string; role: string } | null>(null);
   isDarkMode = signal(false);
+  isMobile = signal(false);
 
   constructor(private auth: AuthService, private theme: ThemeService) {
     const user = this.auth.getUser();
     this.currentUser.set(user);
     this.isAdmin.set(this.auth.isAdmin());
     this.isDarkMode.set(this.theme.isDarkMode());
+    this.checkMobile();
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkMobile();
+  }
+
+  private checkMobile() {
+    this.isMobile.set(window.innerWidth < 768);
   }
 
   toggleTheme() {

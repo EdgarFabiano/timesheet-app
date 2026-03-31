@@ -3,17 +3,32 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 
 .page-header h1 {
   margin: 0;
   font-size: 28px;
   font-weight: 400;
+  
+  @media (max-width: 767px) {
+    font-size: 22px;
+  }
 }
 
 .header-actions {
   display: flex;
   gap: 12px;
+  
+  @media (max-width: 767px) {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .filter-card {
@@ -25,15 +40,30 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
+  
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 }
 
 .date-presets {
   display: flex;
   gap: 8px;
+  
+  @media (max-width: 767px) {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .filter-field {
   min-width: 150px;
+  
+  @media (max-width: 767px) {
+    width: 100%;
+  }
 }
 
 .summary-cards {
@@ -41,6 +71,15 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+  
+  @media (max-width: 767px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .summary-card {
@@ -49,6 +88,10 @@
 
 .summary-card mat-card-content {
   padding: 24px;
+  
+  @media (max-width: 767px) {
+    padding: 16px;
+  }
 }
 
 .summary-icon {
@@ -60,12 +103,22 @@
   width: 40px;
   height: 40px;
   color: var(--mat-sys-primary);
+  
+  @media (max-width: 767px) {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .summary-value {
   font-size: 36px;
   font-weight: 500;
   color: var(--mat-sys-on-surface);
+  
+  @media (max-width: 767px) {
+    font-size: 28px;
+  }
 }
 
 .summary-label {
@@ -79,10 +132,20 @@
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 24px;
   padding: 24px 0;
+  
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px 0;
+  }
 }
 
 .chart-card {
   padding: 16px;
+  
+  @media (max-width: 767px) {
+    padding: 12px;
+  }
 }
 
 .chart-card.full-width {
@@ -92,15 +155,27 @@
 .chart-container {
   height: 300px;
   position: relative;
+  
+  @media (max-width: 767px) {
+    height: 250px;
+  }
 }
 
 .chart-container.horizontal-chart {
   height: 400px;
+  
+  @media (max-width: 767px) {
+    height: 300px;
+  }
 }
 
 .entries-table,
 .project-table {
   width: 100%;
+  
+  @media (max-width: 767px) {
+    font-size: 13px;
+  }
 }
 
 .notes-cell {
@@ -108,12 +183,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  
+  @media (max-width: 767px) {
+    max-width: 100px;
+  }
 }
 
 .percentage-bar {
   display: flex;
   align-items: center;
   gap: 12px;
+  
+  @media (max-width: 767px) {
+    gap: 8px;
+  }
 }
 
 .percentage-fill {
@@ -122,6 +205,10 @@
   border-radius: 4px;
   min-width: 20px;
   max-width: 150px;
+  
+  @media (max-width: 767px) {
+    max-width: 80px;
+  }
 }
 
 .percentage-text {
@@ -134,6 +221,10 @@
   text-align: center;
   color: var(--mat-sys-on-surface-variant);
   padding: 48px;
+  
+  @media (max-width: 767px) {
+    padding: 32px 16px;
+  }
 }
 
 .loading-shade {
@@ -157,29 +248,6 @@ mat-card {
 mat-tab-group {
   background: var(--mat-sys-surface-container);
   border-radius: 4px;
-}
-
-@media (max-width: 768px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filter-field {
-    width: 100%;
-  }
-
-  .summary-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .summary-value {
-    font-size: 28px;
-  }
 }
 
 .skeleton-icon {

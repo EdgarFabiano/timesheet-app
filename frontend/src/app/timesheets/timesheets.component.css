@@ -3,12 +3,22 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 
 .page-header h1 {
   margin: 0;
   font-size: 24px;
   font-weight: 400;
+  
+  @media (max-width: 767px) {
+    font-size: 20px;
+  }
 }
 
 .header-actions {
@@ -25,12 +35,23 @@
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
+  
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 }
 
 .week-navigation {
   display: flex;
   align-items: center;
   gap: 4px;
+  
+  @media (max-width: 767px) {
+    justify-content: space-between;
+    width: 100%;
+  }
 }
 
 .week-label {
@@ -40,6 +61,11 @@
   cursor: pointer;
   padding: 8px;
   border-radius: 4px;
+  
+  @media (max-width: 767px) {
+    min-width: 100px;
+    font-size: 13px;
+  }
 }
 
 .week-label:hover {
@@ -48,6 +74,10 @@
 
 .filter-field {
   min-width: 200px;
+  
+  @media (max-width: 767px) {
+    width: 100%;
+  }
 }
 
 .total-hours {
@@ -56,6 +86,11 @@
   background: var(--mat-sys-surface-container-highest);
   border-radius: 4px;
   display: inline-block;
+  
+  @media (max-width: 767px) {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .loading-shade {
@@ -70,15 +105,29 @@
   text-align: center;
   padding: 40px;
   color: var(--mat-sys-on-surface-variant);
+  
+  @media (max-width: 767px) {
+    padding: 24px 16px;
+  }
 }
 
 .table-container {
   overflow-x: auto;
+  
+  @media (max-width: 767px) {
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
 }
 
 .timesheet-grid {
   width: 100%;
   min-width: 800px;
+  
+  @media (max-width: 767px) {
+    min-width: 700px;
+    font-size: 13px;
+  }
 }
 
 .timesheet-grid th,
@@ -86,12 +135,22 @@
   padding: 8px;
   text-align: center;
   min-width: 80px;
+  
+  @media (max-width: 767px) {
+    padding: 4px 2px;
+    min-width: 60px;
+  }
 }
 
 .timesheet-grid .project-cell {
   text-align: left;
   min-width: 150px;
   font-weight: 500;
+  
+  @media (max-width: 767px) {
+    min-width: 100px;
+    font-size: 12px;
+  }
 }
 
 .day-header {
@@ -104,11 +163,19 @@
 .day-name {
   font-weight: 600;
   font-size: 14px;
+  
+  @media (max-width: 767px) {
+    font-size: 12px;
+  }
 }
 
 .day-number {
   font-size: 12px;
   color: var(--mat-sys-on-surface-variant);
+  
+  @media (max-width: 767px) {
+    font-size: 10px;
+  }
 }
 
 .hours-input:focus {
@@ -130,6 +197,10 @@
 .total-cell {
   font-weight: 500;
   background: var(--mat-sys-surface-container-highest);
+  
+  @media (max-width: 767px) {
+    font-size: 12px;
+  }
 }
 
 .total-row {
@@ -185,6 +256,13 @@
   box-sizing: border-box;
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
+  
+  @media (max-width: 767px) {
+    width: 48px;
+    height: 24px;
+    font-size: 12px;
+    padding: 2px 4px;
+  }
 }
 
 .notes-btn {
@@ -192,6 +270,12 @@
   height: 24px;
   line-height: 24px;
   padding: 0;
+  
+  @media (max-width: 767px) {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+  }
 }
 
 .notes-btn mat-icon {
@@ -199,6 +283,12 @@
   width: 16px;
   height: 16px;
   color: var(--mat-sys-on-surface-variant);
+  
+  @media (max-width: 767px) {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .notes-btn.has-notes mat-icon {
@@ -228,6 +318,15 @@
   border-radius: 8px;
   width: 400px;
   max-width: 90vw;
+  
+  @media (max-width: 767px) {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .dialog-content h2 {

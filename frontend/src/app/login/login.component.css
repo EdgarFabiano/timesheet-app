@@ -4,12 +4,17 @@
   align-items: center;
   min-height: 100vh;
   background: var(--mat-sys-surface-container-lowest);
+  padding: 16px;
 }
 
 .login-card {
   width: 100%;
   max-width: 400px;
   padding: 16px;
+  
+  @media (max-width: 767px) {
+    padding: 12px;
+  }
 }
 
 .full-width {

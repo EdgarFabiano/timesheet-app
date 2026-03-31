@@ -1,5 +1,5 @@
 <mat-sidenav-container class="shell-container">
-  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+  <mat-sidenav #sidenav [mode]="isMobile() ? 'over' : 'side'" [opened]="!isMobile()" class="sidenav">
     <div class="sidenav-header">
       <h3>Timesheet App</h3>
     </div>

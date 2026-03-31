@@ -6,6 +6,22 @@
   width: 240px;
   background: var(--mat-sys-surface-container);
   transition: transform 0.3s ease;
+  
+  @media (max-width: 767px) {
+    width: 280px;
+  }
+}
+
+.sidenav-header {
+  padding: 16px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  
+  h3 {
+    @media (max-width: 767px) {
+      font-size: 18px;
+    }
+  }
 }
 
 .sidenav-header {
@@ -32,6 +48,11 @@
   padding: 24px;
   min-height: calc(100vh - 64px);
   background: var(--mat-sys-surface);
+  
+  @media (max-width: 767px) {
+    padding: 16px;
+    min-height: calc(100vh - 56px);
+  }
 }
 
 .page-transition {
